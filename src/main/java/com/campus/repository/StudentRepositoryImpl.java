@@ -18,13 +18,13 @@ public class StudentRepositoryImpl implements StudentRepository {
 
   @Override
   public void save(Student student) {
-    String sql = "INSERT INTO student (first_name, last_name, email, university, gpa) VALUES (?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO student (firstName, lastName, email, university, gpa) VALUES (?, ?, ?, ?, ?)";
     jdbcTemplate.update(sql, student.getFirstName(), student.getLastName(), student.getEmail(), student.getUniversity(), student.getGpa());
   }
 
   @Override
   public Student findById(int id) {
-    String sql = "SELECT * FROM student WHERE student_id = ?";
+    String sql = "SELECT * FROM student WHERE studentID = ?";
     return jdbcTemplate.queryForObject(sql, new Object[]{id}, new StudentRowMapper());
   }
 
@@ -36,13 +36,13 @@ public class StudentRepositoryImpl implements StudentRepository {
 
   @Override
   public void update(Student student) {
-    String sql = "UPDATE student SET first_name = ?, last_name = ?, email = ?, university = ?, gpa = ? WHERE student_id = ?";
+    String sql = "UPDATE student SET firstName = ?, lastName = ?, email = ?, university = ?, gpa = ? WHERE studentID = ?";
     jdbcTemplate.update(sql, student.getFirstName(), student.getLastName(), student.getEmail(), student.getUniversity(), student.getGpa(), student.getStudentId());
   }
 
   @Override
   public void deleteById(int id) {
-    String sql = "DELETE FROM student WHERE student_id = ?";
+    String sql = "DELETE FROM student WHERE studentID = ?";
     jdbcTemplate.update(sql, id);
   }
 
@@ -50,9 +50,9 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Override
     public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
       Student student = new Student();
-      student.setStudentId(rs.getInt("student_id"));
-      student.setFirstName(rs.getString("first_name"));
-      student.setLastName(rs.getString("last_name"));
+      student.setStudentId(rs.getInt("studentID"));
+      student.setFirstName(rs.getString("firstName"));
+      student.setLastName(rs.getString("lastName"));
       student.setEmail(rs.getString("email"));
       student.setUniversity(rs.getString("university"));
       student.setGpa(rs.getDouble("gpa"));
