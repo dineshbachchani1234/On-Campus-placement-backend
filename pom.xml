@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.campus</groupId>
-  <artifactId>on-campus-placement-backend</artifactId>
+  <artifactId>on-campus-placement-complete-backend</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>On Campus Placement Backend</name>
-  <description>Backend Project for Campus Recruitment</description>
+  <name>On Campus Placement Complete Backend</name>
+  <description>Complete backend project for campus recruitment</description>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
