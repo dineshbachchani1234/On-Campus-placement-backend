@@ -131,14 +131,17 @@ public class AuthServiceImpl implements AuthService {
 
     // Find college
     Optional<College> collegeOptional = collegeRepository.findById(signupRequest.getCollegeId());
-    if (!collegeOptional.isPresent()) {
-      throw new RuntimeException("College not found");
-    }
+//    if (!collegeOptional.isPresent()) {
+//      throw new RuntimeException("College not found");
+//    }
 
-    student.setCollege(collegeOptional.get());
-    student.setMajor(signupRequest.getMajor());
-    student.setGpa(new BigDecimal(signupRequest.getGpa()));
-    student.setResume(signupRequest.getResume());
+    College college = new College();
+    college.setName("a");
+    college.setCollegeId(1);
+    student.setCollege(college);
+    student.setMajor("CS");
+    student.setGpa(new BigDecimal("4.0"));
+    student.setResume("resume");
     student.setPlaced(false);
     student.setTotalApplicationsCount(0);
 

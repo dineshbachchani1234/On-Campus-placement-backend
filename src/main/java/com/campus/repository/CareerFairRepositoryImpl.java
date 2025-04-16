@@ -30,7 +30,7 @@ public class CareerFairRepositoryImpl implements CareerFairRepository {
 
   @Override
   public List<CareerFair> findAll() {
-    String sql = "SELECT * FROM careerfair";
+    String sql = "SELECT * FROM event";
     return jdbcTemplate.query(sql, new CareerFairRowMapper());
   }
 
@@ -50,7 +50,7 @@ public class CareerFairRepositoryImpl implements CareerFairRepository {
     @Override
     public CareerFair mapRow(ResultSet rs, int rowNum) throws SQLException {
       CareerFair fair = new CareerFair();
-      fair.setFairId(rs.getInt("fairID"));
+      fair.setFairId(rs.getInt("eventId"));
       fair.setTitle(rs.getString("title"));
       fair.setDescription(rs.getString("description"));
       fair.setDate(rs.getString("date"));
