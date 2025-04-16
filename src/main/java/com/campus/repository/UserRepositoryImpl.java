@@ -5,13 +5,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 @Repository
@@ -69,50 +75,126 @@ public class UserRepositoryImpl implements UserRepository {
 
   @Override
   public boolean deleteById(Integer id) {
-    String sql = "DELETE FROM user WHERE userID = ?";
-    int rowsAffected = jdbcTemplate.update(sql, id);
-    return rowsAffected > 0;
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_delete_user_by_id")
+          .declareParameters(
+              new SqlParameter("p_user_id", Types.INTEGER),
+              new SqlOutParameter("p_rows_deleted", Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_user_id", id);
+
+      Map<String,Object> out = call.execute(in);
+      Integer rows = (Integer) out.get("p_rows_deleted");
+      return rows != null && rows > 0;
+
+    } catch (Exception e) {
+      // TODO: use proper logging
+      System.err.println("Failed to delete user: " + e.getMessage());
+      return false;
+    }
   }
 
   @Override
   public Optional<User> findById(Integer id) {
-    String sql = "SELECT * FROM user WHERE userID = ?";
-
     try {
-      User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
-      return Optional.ofNullable(user);
-    } catch (EmptyResultDataAccessException e) {
+      // Configure the call once (could be a field)
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_user_by_id")
+          .returningResultSet("rs", userRowMapper);
+
+      // Pass IN param
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_user_id", id);
+
+      // Execute and pull out the result set
+      Map<String, Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<User> users = (List<User>) out.get("rs");
+
+      return users.isEmpty()
+          ? Optional.empty()
+          : Optional.of(users.get(0));
+
+    } catch (Exception e) {
+      // handle/log
+      System.err.println("Procedure sp_get_user_by_id failed: " + e.getMessage());
       return Optional.empty();
     }
   }
 
+
   @Override
   public List<User> findAll() {
-    String sql = "SELECT * FROM user";
-    return jdbcTemplate.query(sql, userRowMapper);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_all_users")
+          .returningResultSet("rs", userRowMapper);
+
+      // no IN params
+      Map<String,Object> out = call.execute();
+      @SuppressWarnings("unchecked")
+      List<User> users = (List<User>) out.get("rs");
+      return users;
+
+    } catch (Exception e) {
+      // TODO: proper logging
+      System.err.println("Procedure sp_get_all_users failed: " + e.getMessage());
+      return List.of();
+    }
   }
 
   @Override
   public Optional<User> findByEmail(String email) {
-    String sql = "SELECT * FROM user WHERE email = ?";
-
     try {
-      User user = jdbcTemplate.queryForObject(sql, userRowMapper, email);
-      return Optional.ofNullable(user);
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_user_by_email")
+          .returningResultSet("rs", userRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_email", email);
+
+      Map<String,Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<User> users = (List<User>) out.get("rs");
+
+      if (users.isEmpty()) {
+        return Optional.empty();
+      }
+      return Optional.of(users.get(0));
+
     } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    } catch (Exception e) {
+      // TODO: replace with proper logging
+      System.err.println("Procedure sp_get_user_by_email failed: " + e.getMessage());
       return Optional.empty();
     }
   }
 
+
   @Override
   public boolean existsByEmail(String email) {
-    String sql = "SELECT COUNT(*) FROM user WHERE email = ?";
     try {
-      Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+      SimpleJdbcCall proc = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_count_user_by_email")
+          .declareParameters(
+              new SqlParameter("p_email", Types.VARCHAR),
+              new SqlOutParameter("p_count", Types.INTEGER)
+          );
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_email", email);
+
+      Map<String, Object> out = proc.execute(in);
+      Integer count = (Integer) out.get("p_count");
       return count != null && count > 0;
+
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      System.err.println("Procedure call failed: " + e.getMessage());
       return false;
     }
   }
+
 }

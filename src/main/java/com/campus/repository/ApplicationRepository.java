@@ -20,7 +20,6 @@ public interface ApplicationRepository extends BaseRepository<Application, Integ
    */
   List<Application> findByJobId(Integer jobId);
 
-  List<Application> getApplicationsByJobId(Integer jobId);
 
 
   /**

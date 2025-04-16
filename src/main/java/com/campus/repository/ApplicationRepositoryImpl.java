@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -15,8 +19,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -60,140 +66,264 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
   @Override
   public Application save(Application application) {
-    String sql = "INSERT INTO application (studentID, jobID, applicationDate, status) VALUES (?, ?, ?, ?)";
+    // prepare IN values (using defaults if null)
+    int studentId = application.getStudent().getStudentId();
+    int jobId     = application.getJob().getJobId();
+    java.sql.Date appDate = application.getApplicationDate() != null
+        ? java.sql.Date.valueOf(application.getApplicationDate())
+        : java.sql.Date.valueOf(LocalDate.now());
+    String status = application.getStatus() != null
+        ? application.getStatus().toString()
+        : Application.ApplicationStatus.PENDING.toString();
 
-    KeyHolder keyHolder = new GeneratedKeyHolder();
+    // SimpleJdbcCall for the proc
+    SimpleJdbcCall insertProc = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_insert_application")
+        .declareParameters(
+            new SqlParameter("p_student_id",   Types.INTEGER),
+            new SqlParameter   ("p_job_id",       Types.INTEGER),
+            new SqlParameter   ("p_app_date",     Types.DATE),
+            new SqlParameter   ("p_status",       Types.VARCHAR),
+            new SqlOutParameter("p_new_id",       Types.INTEGER)
+        );
 
-    jdbcTemplate.update(connection -> {
-      PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-      ps.setInt(1, application.getStudent().getStudentId());
-      ps.setInt(2, application.getJob().getJobId());
-      ps.setDate(3, application.getApplicationDate() != null ?
-          Date.valueOf(application.getApplicationDate()) :
-          Date.valueOf(LocalDate.now()));
-      ps.setString(4, application.getStatus() != null ?
-          application.getStatus().toString() :
-          Application.ApplicationStatus.PENDING.toString());
-      return ps;
-    }, keyHolder);
+    // execute
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_student_id", studentId)
+        .addValue("p_job_id",     jobId)
+        .addValue("p_app_date",   appDate)
+        .addValue("p_status",     status);
 
-    application.setApplicationId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+    Map<String, Object> out = insertProc.execute(in);
+    Integer newId = (Integer) out.get("p_new_id");
+    application.setApplicationId(newId);
+
     return application;
   }
+
 
   @Override
   public Application update(Application application) {
-    String sql = "UPDATE application SET studentID = ?, jobID = ?, applicationDate = ?, status = ? " +
-        "WHERE applicationID = ?";
+    // Prepare the proc call
+    SimpleJdbcCall updateProc = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_update_application")
+        .declareParameters(
+            new SqlParameter  ("p_application_id", Types.INTEGER),
+            new SqlParameter  ("p_student_id",     Types.INTEGER),
+            new SqlParameter  ("p_job_id",         Types.INTEGER),
+            new SqlParameter  ("p_app_date",       Types.DATE),
+            new SqlParameter  ("p_status",         Types.VARCHAR),
+            new SqlOutParameter("p_rows_affected", Types.INTEGER)
+        );
 
-    jdbcTemplate.update(sql,
-        application.getStudent().getStudentId(),
-        application.getJob().getJobId(),
-        Date.valueOf(application.getApplicationDate()),
-        application.getStatus().toString(),
-        application.getApplicationId()
-    );
+    // Map IN parameters
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_application_id", application.getApplicationId())
+        .addValue("p_student_id",     application.getStudent().getStudentId())
+        .addValue("p_job_id",         application.getJob().getJobId())
+        .addValue("p_app_date",       Date.valueOf(application.getApplicationDate()))
+        .addValue("p_status",         application.getStatus().toString());
+
+    // Execute
+    Map<String, Object> out = updateProc.execute(in);
+    Integer rows = (Integer) out.get("p_rows_affected");
+
+    if (rows == null || rows == 0) {
+      // you can throw an exception here if you like
+      System.err.println("No rows updated for applicationID="
+          + application.getApplicationId());
+    }
 
     return application;
   }
 
+
   @Override
   public boolean deleteById(Integer id) {
-    String sql = "DELETE FROM application WHERE applicationID = ?";
-    int rowsAffected = jdbcTemplate.update(sql, id);
-    return rowsAffected > 0;
+    try {
+      SimpleJdbcCall deleteProc = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_delete_application_by_id")
+          .declareParameters(
+              new SqlParameter   ("p_app_id",       Types.INTEGER),
+              new SqlOutParameter("p_rows_deleted", Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_app_id", id);
+
+      Map<String,Object> out = deleteProc.execute(in);
+      Integer rows = (Integer) out.get("p_rows_deleted");
+      return rows != null && rows > 0;
+
+    } catch (Exception e) {
+      System.err.println("Failed to delete application: " + e.getMessage());
+      return false;
+    }
   }
+
 
   @Override
   public Optional<Application> findById(Integer id) {
-    String sql = "SELECT * FROM application WHERE applicationID = ?";
-
     try {
-      Application application = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-        Application app = new Application();
-        app.setApplicationId(rs.getInt("applicationID"));
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_application_by_id")
+          .returningResultSet("rs", (rs, rowNum) -> {
+            Application app = new Application();
+            app.setApplicationId(rs.getInt("applicationID"));
 
-        Student student = new Student();
-        student.setStudentId(rs.getInt("studentID"));
-        app.setStudent(student);
+            Student student = new Student();
+            student.setStudentId(rs.getInt("studentID"));
+            app.setStudent(student);
 
-        JobListing job = new JobListing();
-        job.setJobId(rs.getInt("jobID"));
-        app.setJob(job);
+            JobListing job = new JobListing();
+            job.setJobId(rs.getInt("jobID"));
+            app.setJob(job);
 
-        app.setApplicationDate(rs.getDate("applicationDate").toLocalDate());
+            app.setApplicationDate(rs.getDate("applicationDate").toLocalDate());
+            app.setStatus(Application.ApplicationStatus.valueOf(rs.getString("status")));
 
-        String statusStr = rs.getString("status");
-        if (statusStr != null) {
-          app.setStatus(Application.ApplicationStatus.valueOf(statusStr));
-        }
+            // load full student and job
+            studentRepository.findById(student.getStudentId()).ifPresent(app::setStudent);
+            jobListingRepository.findById(job.getJobId()).ifPresent(app::setJob);
 
-        // Load the student and job with full details
-        studentRepository.findById(student.getStudentId()).ifPresent(app::setStudent);
+            return app;
+          });
 
-        // Make sure job is fully loaded with company
-        Optional<JobListing> fullJob = jobListingRepository.findById(job.getJobId());
-        if (fullJob.isPresent()) {
-          app.setJob(fullJob.get());
-        }
+      Map<String, Object> out = call.execute(Map.of("p_app_id", id));
 
-        return app;
-      }, id);
+      @SuppressWarnings("unchecked")
+      List<Application> list = (List<Application>) out.get("rs");
+      if (list.isEmpty()) {
+        return Optional.empty();
+      }
+      return Optional.of(list.get(0));
 
-      return Optional.ofNullable(application);
     } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    } catch (Exception e) {
+      System.err.println("sp_get_application_by_id failed: " + e.getMessage());
       return Optional.empty();
     }
   }
 
+
   @Override
   public List<Application> findAll() {
-    String sql = "SELECT * FROM application";
-    return jdbcTemplate.query(sql, applicationRowMapper);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_all_applications")
+          .returningResultSet("rs", applicationRowMapper);
+
+      Map<String, Object> out = call.execute();
+      @SuppressWarnings("unchecked")
+      List<Application> list = (List<Application>) out.get("rs");
+      return list;
+
+    } catch (Exception e) {
+      // TODO: use real logging
+      System.err.println("sp_get_all_applications failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 
   @Override
   public List<Application> findByStudentId(Integer studentId) {
-    String sql = "SELECT a.*, j.jobID AS job_id, j.title AS job_title, j.description AS job_description,\n"
-        + "               j.salary AS job_salary, j.jobType AS job_type, j.deadline AS job_deadline,\n"
-        + "               j.postDate AS job_postDate, j.isActive AS job_isActive,\n"
-        + "               c.companyID AS company_id, c.companyname AS company_name, c.industry AS company_industry\n"
-        + "               FROM application a\n"
-        + "               JOIN joblisting j ON a.jobID = j.jobID\n"
-        + "               JOIN company c ON j.companyID = c.companyID\n"
-        + "               WHERE a.studentID = ?";
-    return jdbcTemplate.query(sql, applicationRowMapper, studentId);
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_get_applications_by_student_id")
+        .returningResultSet("rs", applicationRowMapper);
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_student_id", studentId);
+
+    Map<String, Object> out = call.execute(in);
+    @SuppressWarnings("unchecked")
+    List<Application> apps = (List<Application>) out.get("rs");
+    return apps;
   }
+
 
   @Override
   public List<Application> findByJobId(Integer jobId) {
-    String sql = "SELECT * FROM application WHERE jobID = ?";
-    return jdbcTemplate.query(sql, applicationRowMapper, jobId);
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_get_applications_by_job_id")
+        .returningResultSet("rs", applicationRowMapper);
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_job_id", jobId);
+
+    Map<String, Object> out = call.execute(in);
+    @SuppressWarnings("unchecked")
+    List<Application> apps = (List<Application>) out.get("rs");
+    return apps;
   }
 
-  @Override
-  public List<Application> getApplicationsByJobId(Integer jobId) {
-    String sql = "SELECT * FROM application WHERE jobID = ?";
-    return jdbcTemplate.query(sql, applicationRowMapper, jobId);
-  }
 
   @Override
   public List<Application> findByStatus(Application.ApplicationStatus status) {
-    String sql = "SELECT * FROM application WHERE status = ?";
-    return jdbcTemplate.query(sql, applicationRowMapper, status.toString());
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_get_applications_by_status")
+        .returningResultSet("rs", applicationRowMapper);
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_status", status.toString());
+
+    Map<String, Object> out = call.execute(in);
+    @SuppressWarnings("unchecked")
+    List<Application> apps = (List<Application>) out.get("rs");
+    return apps;
   }
+
 
   @Override
   public boolean existsByStudentIdAndJobId(Integer studentId, Integer jobId) {
-    String sql = "SELECT COUNT(*) FROM application WHERE studentID = ? AND jobID = ?";
-    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, studentId, jobId);
-    return count != null && count > 0;
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_exists_application_by_student_and_job")
+          .declareParameters(
+              new SqlParameter   ("p_student_id", Types.INTEGER),
+              new SqlParameter   ("p_job_id",     Types.INTEGER),
+              new SqlOutParameter("p_count",      Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_student_id", studentId)
+          .addValue("p_job_id",     jobId);
+
+      Map<String, Object> out = call.execute(in);
+      Integer count = (Integer) out.get("p_count");
+      return count != null && count > 0;
+
+    } catch (Exception e) {
+      System.err.println("sp_exists_application_by_student_and_job failed: " + e.getMessage());
+      return false;
+    }
   }
+
 
   @Override
   public boolean updateStatus(Integer applicationId, Application.ApplicationStatus status) {
-    String sql = "UPDATE application SET status = ? WHERE applicationID = ?";
-    int rowsAffected = jdbcTemplate.update(sql, status.toString(), applicationId);
-    return rowsAffected > 0;
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_update_application_status")
+          .declareParameters(
+              new SqlParameter   ("p_app_id", Types.INTEGER),
+              new SqlParameter   ("p_status", Types.VARCHAR),
+              new SqlOutParameter("p_rows",   Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_app_id", applicationId)
+          .addValue("p_status", status.toString());
+
+      Map<String, Object> out = call.execute(in);
+      Integer rows = (Integer) out.get("p_rows");
+      return rows != null && rows > 0;
+
+    } catch (Exception e) {
+      System.err.println("sp_update_application_status failed: " + e.getMessage());
+      return false;
+    }
   }
+
 }
