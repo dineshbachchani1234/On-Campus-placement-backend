@@ -107,7 +107,12 @@ public class UserRepositoryImpl implements UserRepository {
   @Override
   public boolean existsByEmail(String email) {
     String sql = "SELECT COUNT(*) FROM user WHERE email = ?";
-    Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
-    return count != null && count > 0;
+    try {
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+      return count != null && count > 0;
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return false;
+    }
   }
 }
