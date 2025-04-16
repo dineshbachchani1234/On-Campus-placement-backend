@@ -1,38 +1,11 @@
 package com.campus.model;
 
 public class JwtAuthResponse {
-  private String token;
-  private Long id;
+  private String accessToken;
+  private String tokenType = "Bearer";
+  private Integer userId;
   private String email;
-  private String firstName;
-  private String lastName;
-  private String role;
-
-  public JwtAuthResponse(String token, Long id, String email, String firstName, String lastName, String role) {
-    this.token = token;
-    this.id = id;
-    this.email = email;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.role = role;
-  }
-
-  // Getters and setters
-  public String getToken() {
-    return token;
-  }
-
-  public void setToken(String token) {
-    this.token = token;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
+  private User.Role role;
 
   public String getEmail() {
     return email;
@@ -42,27 +15,42 @@ public class JwtAuthResponse {
     this.email = email;
   }
 
-  public String getFirstName() {
-    return firstName;
+  public String getAccessToken() {
+    return accessToken;
   }
 
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
+  public void setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
   }
 
-  public String getLastName() {
-    return lastName;
+  public String getTokenType() {
+    return tokenType;
   }
 
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
+  public void setTokenType(String tokenType) {
+    this.tokenType = tokenType;
   }
 
-  public String getRole() {
+  public Integer getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Integer userId) {
+    this.userId = userId;
+  }
+
+  public User.Role getRole() {
     return role;
   }
 
-  public void setRole(String role) {
+  public void setRole(User.Role role) {
+    this.role = role;
+  }
+
+  public JwtAuthResponse(String accessToken, Integer userId, String email, User.Role role) {
+    this.accessToken = accessToken;
+    this.userId = userId;
+    this.email = email;
     this.role = role;
   }
 }

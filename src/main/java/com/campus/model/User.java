@@ -1,79 +1,42 @@
 package com.campus.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "user")
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "userID")
+  private Integer userId;
 
-  @Column(name = "username", nullable = false, unique = true)
-  private String username;
-
-  @Column(name = "password", nullable = false)
-  private String password;
-
-  @Column(name = "role", nullable = false)
-  private String role; // STUDENT, RECRUITER, ADMIN
-
-  @Column(name = "first_name", nullable = false)
+  @Column(name = "firstName", nullable = false, length = 50)
   private String firstName;
 
-  @Column(name = "last_name", nullable = false)
+  @Column(name = "lastName", nullable = false, length = 50)
   private String lastName;
 
-  public User(Long userId, String username, String password, String role, String firstName,
-      String lastName) {
-    this.userId = userId;
-    this.username = username;
-    this.password = password;
-    this.role = role;
-    this.firstName = firstName;
-    this.lastName = lastName;
+  @Column(name = "email", nullable = false, length = 100, unique = true)
+  private String email;
+
+  @Column(name = "password", nullable = false, length = 255)
+  private String password;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false)
+  private Role role;
+
+  // Enum for user roles
+  public enum Role {
+    STUDENT, ADMIN, RECRUITER
   }
 
-  public User() {
-
-  }
-
-  public Long getUserId() {
+  public Integer getUserId() {
     return userId;
   }
 
-  public void setUserId(Long userId) {
+  public void setUserId(Integer userId) {
     this.userId = userId;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getRole() {
-    return role;
-  }
-
-  public void setRole(String role) {
-    this.role = role;
   }
 
   public String getFirstName() {
@@ -90,5 +53,29 @@ public class User {
 
   public void setLastName(String lastName) {
     this.lastName = lastName;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public Role getRole() {
+    return role;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
   }
 }

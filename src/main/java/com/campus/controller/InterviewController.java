@@ -1,45 +1,238 @@
 package com.campus.controller;
 
 import com.campus.model.Interview;
+import com.campus.model.InterviewExperience;
+import com.campus.model.MessageResponse;
 import com.campus.service.InterviewService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * Controller for interview operations
+ */
 @RestController
 @RequestMapping("/api/interviews")
+@CrossOrigin(origins = "*")
 public class InterviewController {
 
   @Autowired
   private InterviewService interviewService;
 
+  /**
+   * Schedule a new interview
+   * @param interview The interview to schedule
+   * @return Scheduled interview
+   */
   @PostMapping
-  public String createInterview(@RequestBody Interview interview) {
-    interviewService.createInterview(interview);
-    return "Interview created successfully";
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<?> scheduleInterview(@RequestBody Interview interview) {
+    try {
+      Interview scheduledInterview = interviewService.scheduleInterview(interview);
+      return ResponseEntity.ok(scheduledInterview);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(MessageResponse.error(e.getMessage()));
+    }
   }
 
+  /**
+   * Get interview by ID
+   * @param id The interview ID
+   * @return Interview if found
+   */
   @GetMapping("/{id}")
-  public Interview getInterviewById(@PathVariable int id) {
-    return interviewService.getInterviewById(id);
+  public ResponseEntity<?> getInterviewById(@PathVariable Integer id) {
+    Optional<Interview> interview = interviewService.getInterviewById(id);
+
+    if (interview.isPresent()) {
+      return ResponseEntity.ok(interview.get());
+    } else {
+      return ResponseEntity.notFound().build();
+    }
   }
 
-  @GetMapping
-  public List<Interview> getAllInterviews() {
-    return interviewService.getAllInterviews();
+  /**
+   * Get interviews by application ID
+   * @param applicationId The application ID
+   * @return List of interviews for the application
+   */
+  @GetMapping("/application/{applicationId}")
+  public ResponseEntity<List<Interview>> getInterviewsByApplicationId(@PathVariable Integer applicationId) {
+    List<Interview> interviews = interviewService.getInterviewsByApplicationId(applicationId);
+    return ResponseEntity.ok(interviews);
   }
 
-  @PutMapping("/{id}")
-  public String updateInterview(@PathVariable int id, @RequestBody Interview interview) {
-    interview.setInterviewId(id);
-    interviewService.updateInterview(interview);
-    return "Interview updated successfully";
+  /**
+   * Get interviews by recruiter ID
+   * @param recruiterId The recruiter ID
+   * @return List of interviews conducted by the recruiter
+   */
+  @GetMapping("/recruiter/{recruiterId}")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<List<Interview>> getInterviewsByRecruiterId(@PathVariable Integer recruiterId) {
+    List<Interview> interviews = interviewService.getInterviewsByRecruiterId(recruiterId);
+    return ResponseEntity.ok(interviews);
   }
 
-  @DeleteMapping("/{id}")
-  public String deleteInterview(@PathVariable int id) {
-    interviewService.deleteInterview(id);
-    return "Interview deleted successfully";
+  /**
+   * Get interviews by status
+   * @param status The interview status
+   * @return List of interviews with the specified status
+   */
+  @GetMapping("/status/{status}")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<List<Interview>> getInterviewsByStatus(@PathVariable Interview.InterviewStatus status) {
+    List<Interview> interviews = interviewService.getInterviewsByStatus(status);
+    return ResponseEntity.ok(interviews);
+  }
+
+  /**
+   * Get interviews by result
+   * @param result The interview result
+   * @return List of interviews with the specified result
+   */
+  @GetMapping("/result/{result}")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<List<Interview>> getInterviewsByResult(@PathVariable Interview.InterviewResult result) {
+    List<Interview> interviews = interviewService.getInterviewsByResult(result);
+    return ResponseEntity.ok(interviews);
+  }
+
+  /**
+   * Get upcoming interviews
+   * @return List of upcoming interviews
+   */
+  @GetMapping("/upcoming")
+  public ResponseEntity<List<Interview>> getUpcomingInterviews() {
+    List<Interview> interviews = interviewService.getUpcomingInterviews();
+    return ResponseEntity.ok(interviews);
+  }
+
+  /**
+   * Update interview status
+   * @param id The interview ID
+   * @param status The new status
+   * @return Success message
+   */
+  @PutMapping("/{id}/status")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<?> updateInterviewStatus(
+      @PathVariable Integer id,
+      @RequestParam Interview.InterviewStatus status) {
+
+    boolean updated = interviewService.updateInterviewStatus(id, status);
+
+    if (updated) {
+      return ResponseEntity.ok(MessageResponse.success("Interview status updated successfully"));
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  /**
+   * Update interview result and feedback
+   * @param id The interview ID
+   * @param result The new result
+   * @param feedback The feedback
+   * @return Success message
+   */
+  @PutMapping("/{id}/result")
+  @PreAuthorize("hasRole('RECRUITER')")
+  public ResponseEntity<?> updateInterviewResult(
+      @PathVariable Integer id,
+      @RequestParam Interview.InterviewResult result,
+      @RequestParam(required = false) String feedback) {
+
+    try {
+      boolean updated = interviewService.updateInterviewResult(id, result, feedback);
+
+      if (updated) {
+        return ResponseEntity.ok(MessageResponse.success("Interview result updated successfully"));
+      } else {
+        return ResponseEntity.notFound().build();
+      }
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(MessageResponse.error(e.getMessage()));
+    }
+  }
+
+  /**
+   * Add interview experience
+   * @param experience The interview experience to add
+   * @return Added interview experience
+   */
+  @PostMapping("/experiences")
+  @PreAuthorize("hasRole('STUDENT')")
+  public ResponseEntity<?> addInterviewExperience(@RequestBody InterviewExperience experience) {
+    try {
+      InterviewExperience addedExperience = interviewService.addInterviewExperience(experience);
+      return ResponseEntity.ok(addedExperience);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(MessageResponse.error(e.getMessage()));
+    }
+  }
+
+  /**
+   * Get experiences for an interview
+   * @param interviewId The interview ID
+   * @return List of experiences for the interview
+   */
+  @GetMapping("/{interviewId}/experiences")
+  public ResponseEntity<List<InterviewExperience>> getExperiencesByInterviewId(@PathVariable Integer interviewId) {
+    List<InterviewExperience> experiences = interviewService.getExperiencesByInterviewId(interviewId);
+    return ResponseEntity.ok(experiences);
+  }
+
+  /**
+   * Cancel interview
+   * @param id The interview ID
+   * @return Success message
+   */
+  @PutMapping("/{id}/cancel")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<?> cancelInterview(@PathVariable Integer id) {
+    boolean cancelled = interviewService.cancelInterview(id);
+
+    if (cancelled) {
+      return ResponseEntity.ok(MessageResponse.success("Interview cancelled successfully"));
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  /**
+   * Reschedule interview
+   * @param id The interview ID
+   * @param newDateTime The new date and time
+   * @return Success message
+   */
+  @PutMapping("/{id}/reschedule")
+  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  public ResponseEntity<?> rescheduleInterview(
+      @PathVariable Integer id,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newDateTime) {
+
+    try {
+      boolean rescheduled = interviewService.rescheduleInterview(id, newDateTime);
+
+      if (rescheduled) {
+        return ResponseEntity.ok(MessageResponse.success("Interview rescheduled successfully"));
+      } else {
+        return ResponseEntity.notFound().build();
+      }
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(MessageResponse.error(e.getMessage()));
+    }
   }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/recruiters")
@@ -21,7 +22,7 @@ public class RecruiterController {
   }
 
   @GetMapping("/{id}")
-  public Recruiter getRecruiterById(@PathVariable int id) {
+  public Optional<Recruiter> getRecruiterById(@PathVariable int id) {
     return recruiterService.getRecruiterById(id);
   }
 

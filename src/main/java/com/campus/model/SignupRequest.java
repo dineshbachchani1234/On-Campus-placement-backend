@@ -1,43 +1,43 @@
 package com.campus.model;
 
+
 public class SignupRequest {
-  private Long id;
-  private String first_name;
-  private String last_name;
-  private String username;
+  private String firstName;
+  private String lastName;
+  private String email;
   private String password;
-  private String role;
+  private User.Role role;
 
-  public Long getId() {
-    return id;
+  public Integer getCollegeId() {
+    return collegeId;
   }
 
-  public void setId(Long id) {
-    this.id = id;
+  public void setCollegeId(Integer collegeId) {
+    this.collegeId = collegeId;
   }
 
-  public String getFirst_name() {
-    return first_name;
+  public String getFirstName() {
+    return firstName;
   }
 
-  public void setFirst_name(String first_name) {
-    this.first_name = first_name;
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
   }
 
-  public String getLast_name() {
-    return last_name;
+  public String getLastName() {
+    return lastName;
   }
 
-  public void setLast_name(String last_name) {
-    this.last_name = last_name;
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
   }
 
-  public String getUsername() {
-    return username;
+  public String getEmail() {
+    return email;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   public String getPassword() {
@@ -48,11 +48,61 @@ public class SignupRequest {
     this.password = password;
   }
 
-  public String getRole() {
+  public User.Role getRole() {
     return role;
   }
 
-  public void setRole(String role) {
+  public void setRole(User.Role role) {
     this.role = role;
   }
+
+  public String getMajor() {
+    return major;
+  }
+
+  public void setMajor(String major) {
+    this.major = major;
+  }
+
+  public String getGpa() {
+    return gpa;
+  }
+
+  public void setGpa(String gpa) {
+    this.gpa = gpa;
+  }
+
+  public String getResume() {
+    return resume;
+  }
+
+  public void setResume(String resume) {
+    this.resume = resume;
+  }
+
+  public Integer getCompanyId() {
+    return companyId;
+  }
+
+  public void setCompanyId(Integer companyId) {
+    this.companyId = companyId;
+  }
+
+  public String getPosition() {
+    return position;
+  }
+
+  public void setPosition(String position) {
+    this.position = position;
+  }
+
+  // Student specific fields
+  private Integer collegeId;
+  private String major;
+  private String gpa;
+  private String resume;
+
+  // Recruiter specific fields
+  private Integer companyId;
+  private String position;
 }

@@ -6,8 +6,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.List;
 
 @Repository
@@ -19,7 +21,7 @@ public class SponsorRepositoryImpl implements SponsorRepository {
   @Override
   public void save(Sponsor sponsor) {
     String sql = "INSERT INTO sponsor (name, contribution_amount, email) VALUES (?, ?, ?)";
-    jdbcTemplate.update(sql, sponsor.getName(), sponsor.getContributionAmount(), sponsor.getEmail());
+    jdbcTemplate.update(sql, sponsor.getName(), sponsor.getAmount(), sponsor.getEmail());
   }
 
   @Override
@@ -37,7 +39,7 @@ public class SponsorRepositoryImpl implements SponsorRepository {
   @Override
   public void update(Sponsor sponsor) {
     String sql = "UPDATE sponsor SET name = ?, contribution_amount = ?, email = ? WHERE sponsor_id = ?";
-    jdbcTemplate.update(sql, sponsor.getName(), sponsor.getContributionAmount(), sponsor.getEmail(), sponsor.getSponsorId());
+    jdbcTemplate.update(sql, sponsor.getName(), sponsor.getAmount(), sponsor.getEmail(), sponsor.getSponsorId());
   }
 
   @Override
@@ -52,7 +54,7 @@ public class SponsorRepositoryImpl implements SponsorRepository {
       Sponsor sponsor = new Sponsor();
       sponsor.setSponsorId(rs.getInt("sponsor_id"));
       sponsor.setName(rs.getString("name"));
-      sponsor.setContributionAmount(rs.getDouble("contribution_amount"));
+      sponsor.setAmount(rs.getBigDecimal("contribution_amount"));
       sponsor.setEmail(rs.getString("email"));
       return sponsor;
     }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RecruiterServiceImpl implements RecruiterService {
@@ -19,7 +20,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public Recruiter getRecruiterById(int id) {
+  public Optional<Recruiter> getRecruiterById(int id) {
     return recruiterRepository.findById(id);
   }
 

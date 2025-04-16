@@ -2,88 +2,75 @@ package com.campus.controller;
 
 import com.campus.model.JwtAuthResponse;
 import com.campus.model.LoginRequest;
-import com.campus.model.MessageResponse;
 import com.campus.model.SignupRequest;
-import com.campus.model.User;
-import com.campus.repository.UserRepository;
-import com.campus.security.JwtTokenProvider;
+import com.campus.model.MessageResponse;
+import com.campus.service.AuthService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+
+/**
+ * Controller for authentication operations
+ */
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
   @Autowired
-  private AuthenticationManager authenticationManager;
+  private AuthService authService;
 
-  @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-
-  @Autowired
-  private JwtTokenProvider jwtTokenProvider;
-
+  /**
+   * Login endpoint
+   * @param loginRequest The login request
+   * @return JWT authentication response
+   */
   @PostMapping("/login")
-  public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-    // Authenticate user
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            loginRequest.getUsername(),
-            loginRequest.getPassword()
-        )
-    );
-
-    // Set authentication in security context
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-    // Generate JWT token
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    String jwt = jwtTokenProvider.generateToken(userDetails);
-
-    // Find user details
-    User user = userRepository.findByUsername(loginRequest.getUsername())
-        .orElseThrow(() -> new RuntimeException("User not found"));
-
-    // Return JWT and user details in response
-    return ResponseEntity.ok(new JwtAuthResponse(
-        jwt,
-        user.getUserId(),
-        user.getUsername(),
-        user.getFirstName(),
-        user.getLastName(),
-        user.getRole()
-    ));
+  public ResponseEntity<?> authenticateUser( @RequestBody LoginRequest loginRequest) {
+    try {
+      JwtAuthResponse response = authService.login(loginRequest);
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(MessageResponse.error("Invalid username or password"));
+    }
   }
 
-  @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
-    // Check if email already exists
-    if (userRepository.existsByEmail(signUpRequest.getUsername())) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse());
+  /**
+   * Signup endpoint
+   * @param signupRequest The signup request
+   * @return Success message
+   */
+  @PostMapping("/signup")
+  public ResponseEntity<?> registerUser( @RequestBody SignupRequest signupRequest) {
+    try {
+      // Check if email exists
+      if (authService.existsByEmail(signupRequest.getEmail())) {
+        return ResponseEntity.badRequest()
+            .body(MessageResponse.error("Email is already taken"));
+      }
+
+      // Register user
+      authService.register(signupRequest);
+
+      return ResponseEntity.ok(MessageResponse.success("User registered successfully"));
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(MessageResponse.error(e.getMessage()));
     }
+  }
 
-    User user = new User(
-        signUpRequest.getId(),
-        signUpRequest.getUsername(),
-        passwordEncoder.encode(signUpRequest.getPassword()),
-        signUpRequest.getRole(),
-        signUpRequest.getFirst_name(),
-        signUpRequest.getLast_name()
-    );
-
-    userRepository.save(user);
-    return ResponseEntity.ok(new MessageResponse());
+  /**
+   * Check if email exists
+   * @param email The email to check
+   * @return Boolean indicating if email exists
+   */
+  @GetMapping("/check-email")
+  public ResponseEntity<?> checkEmailExists(@RequestParam String email) {
+    boolean exists = authService.existsByEmail(email);
+    return ResponseEntity.ok(exists);
   }
 }
