@@ -56,6 +56,13 @@ public class ApplicationController {
     }
   }
 
+  @GetMapping("/jobs/{jobId}")
+  public ResponseEntity<List<Application>> getApplicationsByJob(
+      @PathVariable Integer jobId) {
+    List<Application> apps = applicationService.getApplicationsByJobId(jobId);
+    return ResponseEntity.ok(apps);
+  }
+
   /**
    * Get applications by student ID
    * @param studentId The student ID

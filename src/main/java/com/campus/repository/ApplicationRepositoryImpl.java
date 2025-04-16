@@ -172,6 +172,12 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
   }
 
   @Override
+  public List<Application> getApplicationsByJobId(Integer jobId) {
+    String sql = "SELECT * FROM application WHERE jobID = ?";
+    return jdbcTemplate.query(sql, applicationRowMapper, jobId);
+  }
+
+  @Override
   public List<Application> findByStatus(Application.ApplicationStatus status) {
     String sql = "SELECT * FROM application WHERE status = ?";
     return jdbcTemplate.query(sql, applicationRowMapper, status.toString());

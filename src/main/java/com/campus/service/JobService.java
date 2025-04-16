@@ -1,5 +1,6 @@
 package com.campus.service;
 
+import com.campus.model.Application;
 import com.campus.model.JobListing;
 
 import java.util.List;
@@ -35,8 +36,7 @@ public interface JobService {
    * @param companyId The company ID
    * @return List of job listings from the company
    */
-  List<JobListing> getJobsByCompanyId(Integer companyId);
-
+  List<JobListing> getJobsByRecruiterId(Integer companyId);
   /**
    * Get active job listings
    * @return List of active job listings

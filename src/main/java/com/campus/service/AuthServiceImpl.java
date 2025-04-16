@@ -154,13 +154,13 @@ public class AuthServiceImpl implements AuthService {
     recruiter.setUser(user);
 
     // Find company
-    Optional<Company> companyOptional = companyRepository.findById(signupRequest.getCompanyId());
+    Optional<Company> companyOptional = Optional.ofNullable(companyRepository.findById(1));
     if (!companyOptional.isPresent()) {
       throw new RuntimeException("Company not found");
     }
 
     recruiter.setCompany(companyOptional.get());
-    recruiter.setPosition(signupRequest.getPosition());
+    recruiter.setPosition("HR");
 
     recruiterRepository.save(recruiter);
   }

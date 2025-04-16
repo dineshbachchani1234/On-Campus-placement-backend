@@ -20,6 +20,9 @@ public interface ApplicationRepository extends BaseRepository<Application, Integ
    */
   List<Application> findByJobId(Integer jobId);
 
+  List<Application> getApplicationsByJobId(Integer jobId);
+
+
   /**
    * Find applications by status
    * @param status The application status

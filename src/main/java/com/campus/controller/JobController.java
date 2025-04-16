@@ -68,12 +68,12 @@ public class JobController {
 
   /**
    * Get job listings by company ID
-   * @param companyId The company ID
+   * @param recruiterId The company ID
    * @return List of job listings from the company
    */
-  @GetMapping("/company/{companyId}")
-  public ResponseEntity<List<JobListing>> getJobsByCompanyId(@PathVariable Integer companyId) {
-    List<JobListing> jobs = jobService.getJobsByCompanyId(companyId);
+  @GetMapping("/recruiter/{recruiterId}")
+  public ResponseEntity<List<JobListing>> getJobsByRecruiterId(@PathVariable Integer recruiterId) {
+    List<JobListing> jobs = jobService.getJobsByRecruiterId(recruiterId);
     return ResponseEntity.ok(jobs);
   }
 

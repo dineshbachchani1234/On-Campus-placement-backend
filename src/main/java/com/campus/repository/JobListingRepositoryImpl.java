@@ -1,6 +1,7 @@
 package com.campus.repository;
 
 
+import com.campus.model.Application;
 import com.campus.model.Company;
 import com.campus.model.JobListing;
 
@@ -28,6 +29,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
   @Autowired
   private CompanyRepository companyRepository;
+
 
   private RowMapper<JobListing> jobListingRowMapper = (rs, rowNum) -> {
     JobListing jobListing = new JobListing();
@@ -149,8 +151,11 @@ public class JobListingRepositoryImpl implements JobListingRepository {
   }
 
   @Override
-  public List<JobListing> findByCompanyId(Integer companyId) {
-    String sql = "SELECT * FROM joblisting WHERE companyID = ?";
+  public List<JobListing> getJobsByRecruiterId(Integer companyId) {
+    String sql = "SELECT j.* FROM joblisting j\n"
+        + "                 INNER JOIN company c ON j.companyID = c.companyID\n"
+        + "                 INNER JOIN recruiter r ON r.companyID = c.companyID\n"
+        + "                 WHERE r.recruiterID = ?";
     return jdbcTemplate.query(sql, jobListingRowMapper, companyId);
   }
 

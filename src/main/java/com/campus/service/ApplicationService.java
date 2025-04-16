@@ -24,6 +24,7 @@ public interface ApplicationService {
    */
   Optional<Application> getApplicationById(Integer id);
 
+
   /**
    * Get applications by student ID
    * @param studentId The student ID

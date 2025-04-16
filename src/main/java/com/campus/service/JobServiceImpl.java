@@ -1,5 +1,6 @@
 package com.campus.service;
 
+import com.campus.model.Application;
 import com.campus.model.JobListing;
 import com.campus.repository.JobListingRepository;
 import com.campus.service.JobService;
@@ -46,8 +47,8 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public List<JobListing> getJobsByCompanyId(Integer companyId) {
-    return jobListingRepository.findByCompanyId(companyId);
+  public List<JobListing> getJobsByRecruiterId(Integer recruiterId) {
+    return jobListingRepository.getJobsByRecruiterId(recruiterId);
   }
 
   @Override

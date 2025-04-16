@@ -1,6 +1,7 @@
 package com.campus.repository;
 
 
+import com.campus.model.Application;
 import com.campus.model.JobListing;
 
 import java.util.List;
@@ -11,7 +12,7 @@ public interface JobListingRepository extends BaseRepository<JobListing, Integer
    * @param companyId The company ID
    * @return List of jobs from the company
    */
-  List<JobListing> findByCompanyId(Integer companyId);
+  List<JobListing> getJobsByRecruiterId(Integer companyId);
 
   /**
    * Find active jobs
