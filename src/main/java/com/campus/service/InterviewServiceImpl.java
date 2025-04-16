@@ -8,6 +8,7 @@ import com.campus.repository.InterviewExperienceRepository;
 import com.campus.repository.InterviewRepository;
 import com.campus.service.InterviewService;
 
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -169,5 +170,20 @@ public class InterviewServiceImpl implements InterviewService {
     interviewRepository.update(interview);
 
     return true;
+  }
+
+  @Override
+  public List<Interview> getInterviewsByStudentId(Integer studentId) {
+    // First, get all applications for this student
+    List<Application> applications = applicationRepository.findByStudentId(studentId);
+
+    // Then get all interviews for these applications
+    List<Interview> interviews = new ArrayList<>();
+    for (Application application : applications) {
+      List<Interview> appInterviews = interviewRepository.findByStudentId(application.getApplicationId());
+      interviews.addAll(appInterviews);
+    }
+
+    return interviews;
   }
 }

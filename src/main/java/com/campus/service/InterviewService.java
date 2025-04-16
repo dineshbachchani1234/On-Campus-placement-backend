@@ -105,4 +105,6 @@ public interface InterviewService {
    * @return true if rescheduled, false otherwise
    */
   boolean rescheduleInterview(Integer interviewId, LocalDateTime newDateTime);
+
+  List<Interview> getInterviewsByStudentId(Integer studentId);
 }

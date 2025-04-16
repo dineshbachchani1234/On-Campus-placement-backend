@@ -2,6 +2,7 @@ package com.campus.repository;
 
 import com.campus.model.Company;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -52,7 +53,18 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
   @Override
   public Optional<Company> findById(Integer integer) {
-    return Optional.empty();
+    String sql = "SELECT * FROM company WHERE companyID = ?";
+    try {
+      Company company = jdbcTemplate.queryForObject(
+          sql,
+          new Object[]{integer},
+          new CompanyRowMapper()
+      );
+      return Optional.ofNullable(company);
+    } catch (EmptyResultDataAccessException ex) {
+      // No row found for this id
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -92,9 +104,9 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     public Company mapRow(ResultSet rs, int rowNum) throws SQLException {
       Company company = new Company();
       company.setCompanyId(rs.getInt("companyID"));
-      company.setCompanyName(rs.getString("name"));
+      company.setCompanyName(rs.getString("companyName"));
       company.setIndustry(rs.getString("industry"));
-      company.setCompanyEmail(rs.getString("email"));
+      company.setCompanyEmail(rs.getString("companyEmail"));
       return company;
     }
   }

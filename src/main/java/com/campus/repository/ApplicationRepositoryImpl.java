@@ -109,7 +109,37 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     String sql = "SELECT * FROM application WHERE applicationID = ?";
 
     try {
-      Application application = jdbcTemplate.queryForObject(sql, applicationRowMapper, id);
+      Application application = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+        Application app = new Application();
+        app.setApplicationId(rs.getInt("applicationID"));
+
+        Student student = new Student();
+        student.setStudentId(rs.getInt("studentID"));
+        app.setStudent(student);
+
+        JobListing job = new JobListing();
+        job.setJobId(rs.getInt("jobID"));
+        app.setJob(job);
+
+        app.setApplicationDate(rs.getDate("applicationDate").toLocalDate());
+
+        String statusStr = rs.getString("status");
+        if (statusStr != null) {
+          app.setStatus(Application.ApplicationStatus.valueOf(statusStr));
+        }
+
+        // Load the student and job with full details
+        studentRepository.findById(student.getStudentId()).ifPresent(app::setStudent);
+
+        // Make sure job is fully loaded with company
+        Optional<JobListing> fullJob = jobListingRepository.findById(job.getJobId());
+        if (fullJob.isPresent()) {
+          app.setJob(fullJob.get());
+        }
+
+        return app;
+      }, id);
+
       return Optional.ofNullable(application);
     } catch (EmptyResultDataAccessException e) {
       return Optional.empty();
@@ -124,7 +154,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
   @Override
   public List<Application> findByStudentId(Integer studentId) {
-    String sql = "SELECT * FROM application WHERE studentID = ?";
+    String sql = "SELECT a.*, j.jobID AS job_id, j.title AS job_title, j.description AS job_description,\n"
+        + "               j.salary AS job_salary, j.jobType AS job_type, j.deadline AS job_deadline,\n"
+        + "               j.postDate AS job_postDate, j.isActive AS job_isActive,\n"
+        + "               c.companyID AS company_id, c.companyname AS company_name, c.industry AS company_industry\n"
+        + "               FROM application a\n"
+        + "               JOIN joblisting j ON a.jobID = j.jobID\n"
+        + "               JOIN company c ON j.companyID = c.companyID\n"
+        + "               WHERE a.studentID = ?";
     return jdbcTemplate.query(sql, applicationRowMapper, studentId);
   }
 

@@ -235,4 +235,10 @@ public class InterviewController {
           .body(MessageResponse.error(e.getMessage()));
     }
   }
+
+  @GetMapping("/student/{studentId}")
+  public ResponseEntity<List<Interview>> getInterviewsByStudentId(@PathVariable Integer studentId) {
+    List<Interview> interviews = interviewService.getInterviewsByStudentId(studentId);
+    return ResponseEntity.ok(interviews);
+  }
 }

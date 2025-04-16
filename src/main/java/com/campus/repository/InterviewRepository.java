@@ -57,4 +57,6 @@ public interface InterviewRepository extends BaseRepository<Interview, Integer> 
    * @return true if updated, false otherwise
    */
   boolean updateResult(Integer interviewId, Interview.InterviewResult result, String feedback);
+
+  List<Interview> findByStudentId(Integer studentId);
 }

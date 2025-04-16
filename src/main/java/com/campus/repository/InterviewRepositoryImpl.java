@@ -1,9 +1,12 @@
 package com.campus.repository;
 
 import com.campus.model.Application;
+import com.campus.model.Company;
 import com.campus.model.Interview;
+import com.campus.model.JobListing;
 import com.campus.model.Recruiter;
 
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -116,10 +119,81 @@ public class InterviewRepositoryImpl implements InterviewRepository {
 
   @Override
   public Optional<Interview> findById(Integer id) {
-    String sql = "SELECT * FROM interview WHERE interviewID = ?";
+    String sql = "SELECT i.*, a.applicationID AS app_id, a.status AS app_status,\n"
+        + "                 j.jobID AS job_id, j.title AS job_title, j.description AS job_description,\n"
+        + "                 j.salary AS job_salary, j.jobType AS job_type, j.deadline AS job_deadline,\n"
+        + "                 j.postDate AS job_postDate, j.isActive AS job_isActive,\n"
+        + "                 c.companyID AS company_id, c.companyname AS company_name, c.industry AS company_industry\n"
+        + "                 FROM interview i\n"
+        + "                 JOIN application a ON i.applicationID = a.applicationID\n"
+        + "                 JOIN joblisting j ON a.jobID = j.jobID\n"
+        + "                 JOIN company c ON j.companyID = c.companyID\n"
+        + "                 WHERE i.interviewID = ?";
 
     try {
-      Interview interview = jdbcTemplate.queryForObject(sql, interviewRowMapper, id);
+      Interview interview = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+        Interview i = new Interview();
+        i.setInterviewId(rs.getInt("interviewID"));
+
+        // Build the application
+        Application application = new Application();
+        application.setApplicationId(rs.getInt("app_id"));
+
+        String appStatusStr = rs.getString("app_status");
+        if (appStatusStr != null) {
+          application.setStatus(Application.ApplicationStatus.valueOf(appStatusStr));
+        }
+
+        // Build the job
+        JobListing job = new JobListing();
+        job.setJobId(rs.getInt("job_id"));
+        job.setTitle(rs.getString("job_title"));
+        job.setDescription(rs.getString("job_description"));
+        job.setSalary(rs.getBigDecimal("job_salary"));
+
+        String jobTypeStr = rs.getString("job_type");
+        if (jobTypeStr != null) {
+          job.setJobType(JobListing.JobType.valueOf(jobTypeStr));
+        }
+
+        job.setDeadline(rs.getDate("job_deadline").toLocalDate());
+        job.setPostDate(rs.getDate("job_postDate").toLocalDate());
+        job.setActive(rs.getBoolean("job_isActive"));
+
+        // Build the company
+        Company company = new Company();
+        company.setCompanyId(rs.getInt("company_id"));
+        company.setCompanyName(rs.getString("company_name"));
+        company.setIndustry(rs.getString("company_industry"));
+
+        // Set the relationships
+        job.setCompany(company);
+        application.setJob(job);
+        i.setApplication(application);
+
+        // Get recruiter (still need to load it separately)
+        Integer recruiterId = rs.getInt("recruiterID");
+        Optional<Recruiter> recruiter = recruiterRepository.findById(recruiterId);
+        recruiter.ifPresent(i::setRecruiter);
+
+        // Set interview properties
+        i.setInterviewDate(rs.getTimestamp("interviewDate").toLocalDateTime());
+
+        String statusStr = rs.getString("status");
+        if (statusStr != null) {
+          i.setStatus(Interview.InterviewStatus.valueOf(statusStr));
+        }
+
+        String resultStr = rs.getString("result");
+        if (resultStr != null) {
+          i.setResult(Interview.InterviewResult.valueOf(resultStr));
+        }
+
+        i.setFeedback(rs.getString("feedback"));
+
+        return i;
+      }, id);
+
       return Optional.ofNullable(interview);
     } catch (EmptyResultDataAccessException e) {
       return Optional.empty();
@@ -174,5 +248,23 @@ public class InterviewRepositoryImpl implements InterviewRepository {
     String sql = "UPDATE interview SET result = ?, feedback = ? WHERE interviewID = ?";
     int rowsAffected = jdbcTemplate.update(sql, result.toString(), feedback, interviewId);
     return rowsAffected > 0;
+  }
+
+  @Override
+  public List<Interview> findByStudentId(Integer studentId) {
+    // First, get all the interview IDs for this student
+    String idSql = "SELECT i.interviewID FROM interview i " +
+        "JOIN application a ON i.applicationID = a.applicationID " +
+        "WHERE a.studentID = ?";
+
+    List<Integer> interviewIds = jdbcTemplate.queryForList(idSql, Integer.class, studentId);
+
+    // Then load each interview with full details
+    List<Interview> interviews = new ArrayList<>();
+    for (Integer interviewId : interviewIds) {
+      findById(interviewId).ifPresent(interviews::add);
+    }
+
+    return interviews;
   }
 }

@@ -110,8 +110,33 @@ public class JobListingRepositoryImpl implements JobListingRepository {
     String sql = "SELECT * FROM joblisting WHERE jobID = ?";
 
     try {
-      JobListing jobListing = jdbcTemplate.queryForObject(sql, jobListingRowMapper, id);
-      return Optional.ofNullable(jobListing);
+      JobListing job = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+        JobListing j = new JobListing();
+        j.setJobId(rs.getInt("jobID"));
+        j.setTitle(rs.getString("title"));
+        j.setDescription(rs.getString("description"));
+        j.setSalary(rs.getBigDecimal("salary"));
+
+        String jobTypeStr = rs.getString("jobType");
+        if (jobTypeStr != null) {
+          j.setJobType(JobListing.JobType.valueOf(jobTypeStr));
+        }
+
+        j.setDeadline(rs.getDate("deadline").toLocalDate());
+        j.setPostDate(rs.getDate("postDate").toLocalDate());
+        j.setActive(rs.getBoolean("isActive"));
+
+        Company company = new Company();
+        company.setCompanyId(rs.getInt("companyID"));
+        j.setCompany(company);
+
+        // Load the full company details
+        companyRepository.findById(company.getCompanyId()).ifPresent(j::setCompany);
+
+        return j;
+      }, id);
+
+      return Optional.ofNullable(job);
     } catch (EmptyResultDataAccessException e) {
       return Optional.empty();
     }
