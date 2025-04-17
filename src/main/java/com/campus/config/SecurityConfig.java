@@ -59,6 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/api/auth/**").permitAll()
         .antMatchers("/api/jobs/active", "/api/jobs/available", "/api/jobs/{id}").permitAll()
+        .antMatchers(org.springframework.http.HttpMethod.GET, "/api/companies").permitAll()
         .anyRequest().authenticated();
 
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

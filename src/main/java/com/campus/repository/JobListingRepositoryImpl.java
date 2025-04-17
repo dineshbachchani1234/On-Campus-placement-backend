@@ -5,6 +5,7 @@ import com.campus.model.Application;
 import com.campus.model.Company;
 import com.campus.model.JobListing;
 
+import com.campus.model.JobListing.JobType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,7 +50,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
     jobListing.setTitle(rs.getString("title"));
     jobListing.setDescription(rs.getString("description"));
     jobListing.setSalary(rs.getBigDecimal("salary"));
-    jobListing.setJobType(JobListing.JobType.valueOf(rs.getString("jobType")));
+    jobListing.setJobType(JobType.valueOf(rs.getString("jobType")));
     jobListing.setDeadline(rs.getDate("deadline").toLocalDate());
     jobListing.setPostDate(rs.getDate("postDate").toLocalDate());
     jobListing.setActive(rs.getBoolean("isActive"));
@@ -62,12 +63,18 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
   @Override
   public JobListing save(JobListing jobListing) {
-    String companySql = "SELECT companyID FROM recruiter WHERE recruiterID = ?";
-    Integer companyId = jdbcTemplate.queryForObject(
-        companySql,
-        Integer.class,
-        jobListing.getCompany().getCompanyId()
-    );
+    Integer companyId = 0;
+    try {
+      String companySql = "SELECT companyID FROM recruiter WHERE recruiterID = ?";
+      companyId = jdbcTemplate.queryForObject(
+          companySql,
+          Integer.class,
+          jobListing.getCompany().getCompanyId()
+      );
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
 
     String title    = jobListing.getTitle();
     String desc     = jobListing.getDescription();
@@ -198,7 +205,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
             String jobTypeStr = rs.getString("jobType");
             if (jobTypeStr != null) {
-              j.setJobType(JobListing.JobType.valueOf(jobTypeStr));
+              j.setJobType(JobType.valueOf(jobTypeStr));
             }
 
             j.setDeadline(rs.getDate("deadline").toLocalDate());
@@ -298,7 +305,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
 
   @Override
-  public List<JobListing> findByJobType(JobListing.JobType jobType) {
+  public List<JobListing> findByJobType(JobType jobType) {
     try {
       SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
           .withProcedureName("sp_get_joblistings_by_type")
