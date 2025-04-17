@@ -39,12 +39,25 @@ public class AdminRepositoryImpl implements AdminRepository {
 
   @Override
   public Admin save(Admin admin) {
-    String sql = "INSERT INTO admin (adminID) VALUES (?)";
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_insert_admin")
+        .declareParameters(
+            new SqlParameter   ("p_admin_id",      Types.INTEGER),
+            new SqlOutParameter("p_rows_inserted", Types.INTEGER)
+        );
 
-    jdbcTemplate.update(sql, admin.getAdminId());
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_admin_id", admin.getAdminId());
+
+    Map<String,Object> out = call.execute(in);
+    Integer rows = (Integer) out.get("p_rows_inserted");
+    if (rows == null || rows != 1) {
+      System.err.println("Warning: expected 1 admin inserted, got " + rows);
+    }
 
     return admin;
   }
+
 
   @Override
   public Admin update(Admin admin) {
@@ -55,28 +68,74 @@ public class AdminRepositoryImpl implements AdminRepository {
 
   @Override
   public boolean deleteById(Integer id) {
-    String sql = "DELETE FROM admin WHERE adminID = ?";
-    int rowsAffected = jdbcTemplate.update(sql, id);
-    return rowsAffected > 0;
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_delete_admin_by_id")
+          .declareParameters(
+              new SqlParameter   ("p_admin_id",     Types.INTEGER),
+              new SqlOutParameter("p_rows_deleted", Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_admin_id", id);
+
+      Map<String, Object> out = call.execute(in);
+      Integer rows = (Integer) out.get("p_rows_deleted");
+      return rows != null && rows > 0;
+
+    } catch (Exception e) {
+      System.err.println("sp_delete_admin_by_id failed: " + e.getMessage());
+      return false;
+    }
   }
+
 
   @Override
   public Optional<Admin> findById(Integer id) {
-    String sql = "SELECT * FROM admin WHERE adminID = ?";
-
     try {
-      Admin admin = jdbcTemplate.queryForObject(sql, adminRowMapper, id);
-      return Optional.ofNullable(admin);
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_admin_by_id")
+          .returningResultSet("rs", adminRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_admin_id", id);
+
+      Map<String, Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<Admin> list = (List<Admin>) out.get("rs");
+
+      if (list.isEmpty()) {
+        return Optional.empty();
+      }
+      return Optional.of(list.get(0));
+
     } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    } catch (Exception e) {
+      System.err.println("sp_get_admin_by_id failed: " + e.getMessage());
       return Optional.empty();
     }
   }
 
+
   @Override
   public List<Admin> findAll() {
-    String sql = "SELECT * FROM admin";
-    return jdbcTemplate.query(sql, adminRowMapper);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_all_admins")
+          .returningResultSet("rs", adminRowMapper);
+
+      Map<String, Object> out = call.execute();
+      @SuppressWarnings("unchecked")
+      List<Admin> admins = (List<Admin>) out.get("rs");
+      return admins;
+
+    } catch (Exception e) {
+      System.err.println("sp_get_all_admins failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 
   @Override
   public boolean generatePlacementReport(Integer collegeId, Integer year) {

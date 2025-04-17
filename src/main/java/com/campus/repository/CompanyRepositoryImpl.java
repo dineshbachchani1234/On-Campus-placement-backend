@@ -2,14 +2,21 @@ package com.campus.repository;
 
 import com.campus.model.Company;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -22,29 +29,97 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
   @Override
   public Company findById(int id) {
-    String sql = "SELECT * FROM company WHERE companyID = ?";
-    return jdbcTemplate.queryForObject(sql, new Object[]{id}, new CompanyRowMapper());
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_get_company_by_id")
+        .returningResultSet("rs", new CompanyRowMapper());
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_company_id", id);
+
+    Map<String, Object> out = call.execute(in);
+    @SuppressWarnings("unchecked")
+    List<Company> list = (List<Company>) out.get("rs");
+
+    if (list.isEmpty()) {
+      throw new EmptyResultDataAccessException(
+          "No company found for companyID=" + id, 1);
+    }
+    return list.get(0);
   }
+
 
   @Override
   public List<Company> findAll() {
-    String sql = "SELECT * FROM company";
-    return jdbcTemplate.query(sql, new CompanyRowMapper());
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_all_companies")
+          .returningResultSet("rs", new CompanyRowMapper());
+
+      Map<String, Object> out = call.execute();
+      @SuppressWarnings("unchecked")
+      List<Company> list = (List<Company>) out.get("rs");
+      return list;
+
+    } catch (Exception e) {
+      // TODO: replace with proper logging
+      System.err.println("sp_get_all_companies failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 
   @Override
   public Company save(Company entity) {
-    String sql = "INSERT INTO company (name, industry, email) VALUES (?, ?, ?)";
-    jdbcTemplate.update(sql, entity.getCompanyName(), entity.getIndustry(), entity.getCompanyEmail());
-    return null;
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_insert_company")
+        .declareParameters(
+            new SqlParameter("p_name",     Types.VARCHAR),
+            new SqlParameter   ("p_industry", Types.VARCHAR),
+            new SqlParameter   ("p_email",    Types.VARCHAR),
+            new SqlOutParameter("p_new_id",   Types.INTEGER)
+        );
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_name",     entity.getCompanyName())
+        .addValue("p_industry", entity.getIndustry())
+        .addValue("p_email",    entity.getCompanyEmail());
+
+    Map<String,Object> out = call.execute(in);
+    Integer newId = (Integer) out.get("p_new_id");
+    if (newId != null) {
+      entity.setCompanyId(newId);
+    }
+    return entity;
   }
 
   @Override
   public Company update(Company company) {
-    String sql = "UPDATE company SET name = ?, industry = ?, email = ? WHERE companyID = ?";
-    jdbcTemplate.update(sql, company.getCompanyName(), company.getIndustry(), company.getCompanyEmail(), company.getCompanyId());
-    return null;
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_update_company")
+        .declareParameters(
+            new SqlParameter   ("p_company_id",   Types.INTEGER),
+            new SqlParameter   ("p_name",         Types.VARCHAR),
+            new SqlParameter   ("p_industry",     Types.VARCHAR),
+            new SqlParameter   ("p_email",        Types.VARCHAR),
+            new SqlOutParameter("p_rows_updated", Types.INTEGER)
+        );
+
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_company_id", company.getCompanyId())
+        .addValue("p_name",       company.getCompanyName())
+        .addValue("p_industry",   company.getIndustry())
+        .addValue("p_email",      company.getCompanyEmail());
+
+    Map<String, Object> out = call.execute(in);
+    Integer rows = (Integer) out.get("p_rows_updated");
+    if (rows == null || rows == 0) {
+      System.err.println("Warning: no company row updated for ID="
+          + company.getCompanyId());
+    }
+
+    return company;
   }
+
 
   @Override
   public boolean deleteById(Integer integer) {
@@ -52,26 +127,53 @@ public class CompanyRepositoryImpl implements CompanyRepository {
   }
 
   @Override
-  public Optional<Company> findById(Integer integer) {
-    String sql = "SELECT * FROM company WHERE companyID = ?";
+  public Optional<Company> findById(Integer id) {
     try {
-      Company company = jdbcTemplate.queryForObject(
-          sql,
-          new Object[]{integer},
-          new CompanyRowMapper()
-      );
-      return Optional.ofNullable(company);
-    } catch (EmptyResultDataAccessException ex) {
-      // No row found for this id
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_company_by_id")
+          .returningResultSet("rs", new CompanyRowMapper());
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_company_id", id);
+
+      Map<String,Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<Company> list = (List<Company>) out.get("rs");
+      if (list.isEmpty()) {
+        return Optional.empty();
+      }
+      return Optional.of(list.get(0));
+
+    } catch (DataAccessException e) {
+      // no row or other error
       return Optional.empty();
     }
   }
 
+
   @Override
   public void deleteById(int id) {
-    String sql = "DELETE FROM company WHERE companyID = ?";
-    jdbcTemplate.update(sql, id);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_delete_company_by_id")
+          .declareParameters(
+              new SqlParameter   ("p_company_id", Types.INTEGER),
+              new SqlOutParameter("p_rows_deleted", Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_company_id", id);
+
+      Map<String, Object> out = call.execute(in);
+      Integer rows = (Integer) out.get("p_rows_deleted");
+      if (rows == null || rows == 0) {
+        System.err.println("Warning: no company deleted for ID=" + id);
+      }
+    } catch (Exception e) {
+      System.err.println("sp_delete_company_by_id failed: " + e.getMessage());
+    }
   }
+
 
   @Override
   public Optional<Company> findByName(String companyName) {

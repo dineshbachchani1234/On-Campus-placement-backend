@@ -10,9 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -46,64 +52,172 @@ public class RecruiterRepositoryImpl implements RecruiterRepository {
 
   @Override
   public Recruiter save(Recruiter recruiter) {
-    String sql = "INSERT INTO recruiter (recruiterID, companyID, position) VALUES (?, ?, ?)";
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_insert_recruiter")
+        .declareParameters(
+            new SqlParameter   ("p_recruiter_id",  Types.INTEGER),
+            new SqlParameter   ("p_company_id",    Types.INTEGER),
+            new SqlParameter("p_position",      Types.VARCHAR),
+            new SqlOutParameter("p_rows_inserted", Types.INTEGER)
+        );
 
-    jdbcTemplate.update(sql,
-        recruiter.getRecruiterId(),
-        recruiter.getCompany().getCompanyId(),
-        recruiter.getPosition()
-    );
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_recruiter_id", recruiter.getRecruiterId())
+        .addValue("p_company_id",   recruiter.getCompany().getCompanyId())
+        .addValue("p_position",     recruiter.getPosition());
+
+    Map<String,Object> out = call.execute(in);
+    Integer rows = (Integer) out.get("p_rows_inserted");
+    if (rows == null || rows != 1) {
+      System.err.println("Warning: expected 1 recruiter inserted, got " + rows);
+    }
 
     return recruiter;
   }
+
 
   @Override
   public Recruiter update(Recruiter recruiter) {
-    String sql = "UPDATE recruiter SET companyID = ?, position = ? WHERE recruiterID = ?";
+    SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("sp_update_recruiter")
+        .declareParameters(
+            new SqlParameter   ("p_recruiter_id", Types.INTEGER),
+            new SqlParameter   ("p_company_id",   Types.INTEGER),
+            new SqlParameter   ("p_position",     Types.VARCHAR),
+            new SqlOutParameter("p_rows_updated", Types.INTEGER)
+        );
 
-    jdbcTemplate.update(sql,
-        recruiter.getCompany().getCompanyId(),
-        recruiter.getPosition(),
-        recruiter.getRecruiterId()
-    );
+    MapSqlParameterSource in = new MapSqlParameterSource()
+        .addValue("p_recruiter_id", recruiter.getRecruiterId())
+        .addValue("p_company_id",   recruiter.getCompany().getCompanyId())
+        .addValue("p_position",     recruiter.getPosition());
+
+    Map<String,Object> out = call.execute(in);
+    Integer rows = (Integer) out.get("p_rows_updated");
+    if (rows == null || rows == 0) {
+      System.err.println("Warning: no recruiter row updated for ID="
+          + recruiter.getRecruiterId());
+    }
 
     return recruiter;
   }
 
+
   @Override
   public boolean deleteById(Integer id) {
-    String sql = "DELETE FROM recruiter WHERE recruiterID = ?";
-    int rowsAffected = jdbcTemplate.update(sql, id);
-    return rowsAffected > 0;
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_delete_recruiter_by_id")
+          .declareParameters(
+              new SqlParameter   ("p_recruiter_id", Types.INTEGER),
+              new SqlOutParameter("p_rows_deleted", Types.INTEGER)
+          );
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_recruiter_id", id);
+
+      Map<String, Object> out = call.execute(in);
+      Integer rows = (Integer) out.get("p_rows_deleted");
+      return rows != null && rows > 0;
+
+    } catch (Exception e) {
+      System.err.println("sp_delete_recruiter_by_id failed: " + e.getMessage());
+      return false;
+    }
   }
+
 
   @Override
   public Optional<Recruiter> findById(Integer id) {
-    String sql = "SELECT * FROM recruiter WHERE recruiterID = ?";
-
     try {
-      Recruiter recruiter = jdbcTemplate.queryForObject(sql, recruiterRowMapper, id);
-      return Optional.ofNullable(recruiter);
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_recruiter_by_id")
+          .returningResultSet("rs", recruiterRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_recruiter_id", id);
+
+      Map<String, Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<Recruiter> list = (List<Recruiter>) out.get("rs");
+
+      if (list.isEmpty()) {
+        return Optional.empty();
+      }
+      return Optional.of(list.get(0));
+
     } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    } catch (Exception e) {
+      System.err.println("sp_get_recruiter_by_id failed: " + e.getMessage());
       return Optional.empty();
     }
   }
 
+
   @Override
   public List<Recruiter> findAll() {
-    String sql = "SELECT * FROM recruiter";
-    return jdbcTemplate.query(sql, recruiterRowMapper);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_all_recruiters")
+          .returningResultSet("rs", recruiterRowMapper);
+
+      Map<String, Object> out = call.execute();
+      @SuppressWarnings("unchecked")
+      List<Recruiter> list = (List<Recruiter>) out.get("rs");
+      return list;
+
+    } catch (Exception e) {
+      // TODO: use proper logging
+      System.err.println("sp_get_all_recruiters failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 
   @Override
   public List<Recruiter> findByCompanyId(Integer companyId) {
-    String sql = "SELECT * FROM recruiter WHERE companyID = ?";
-    return jdbcTemplate.query(sql, recruiterRowMapper, companyId);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_recruiters_by_company_id")
+          .returningResultSet("rs", recruiterRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_company_id", companyId);
+
+      Map<String,Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<Recruiter> recruiters = (List<Recruiter>) out.get("rs");
+      return recruiters;
+
+    } catch (Exception e) {
+      // TODO: replace with proper logging
+      System.err.println("sp_get_recruiters_by_company_id failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 
   @Override
   public List<Recruiter> findByPosition(String position) {
-    String sql = "SELECT * FROM recruiter WHERE position = ?";
-    return jdbcTemplate.query(sql, recruiterRowMapper, position);
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_recruiters_by_position")
+          .returningResultSet("rs", recruiterRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_position", position);
+
+      Map<String, Object> out = call.execute(in);
+      @SuppressWarnings("unchecked")
+      List<Recruiter> recruiters = (List<Recruiter>) out.get("rs");
+      return recruiters;
+
+    } catch (Exception e) {
+      // TODO: replace with proper logging
+      System.err.println("sp_get_recruiters_by_position failed: " + e.getMessage());
+      return List.of();
+    }
   }
+
 }
