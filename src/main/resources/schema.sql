@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `campus_recruitment` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `campus_recruitment`;
--- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: campus_recruitment
 -- ------------------------------------------------------
--- Server version	9.2.0
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -37,7 +37,7 @@ CREATE TABLE `admin` (
 
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
-INSERT INTO `admin` VALUES (1),(2);
+INSERT INTO `admin` VALUES (1),(2),(45),(46),(58);
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -59,7 +59,7 @@ CREATE TABLE `application` (
                                KEY `fk_application_job` (`jobID`),
                                CONSTRAINT `fk_application_job` FOREIGN KEY (`jobID`) REFERENCES `joblisting` (`jobID`) ON DELETE CASCADE ON UPDATE CASCADE,
                                CONSTRAINT `fk_application_student` FOREIGN KEY (`studentID`) REFERENCES `student` (`studentID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +68,7 @@ CREATE TABLE `application` (
 
 LOCK TABLES `application` WRITE;
 /*!40000 ALTER TABLE `application` DISABLE KEYS */;
-INSERT INTO `application` VALUES (1,3,1,'2025-03-16','SHORTLISTED'),(2,3,3,'2025-03-21','PENDING'),(3,4,1,'2025-03-17','REJECTED'),(4,4,6,'2025-03-19','SHORTLISTED'),(5,5,2,'2025-03-11','INTERVIEWED'),(6,5,4,'2025-03-14','OFFERED'),(7,6,3,'2025-03-06','ACCEPTED'),(8,7,5,'2025-03-18','SHORTLISTED'),(9,3,6,'2025-04-16','PENDING'),(10,39,4,'2025-04-16','PENDING');
+INSERT INTO `application` VALUES (1,3,1,'2025-03-16','SHORTLISTED'),(2,3,3,'2025-03-21','PENDING'),(3,4,1,'2025-03-17','REJECTED'),(4,4,6,'2025-03-19','SHORTLISTED'),(5,5,2,'2025-03-11','INTERVIEWED'),(6,5,4,'2025-03-14','OFFERED'),(7,6,3,'2025-03-06','ACCEPTED'),(8,7,5,'2025-03-18','SHORTLISTED'),(9,3,6,'2025-04-16','PENDING'),(10,39,4,'2025-04-16','PENDING'),(11,40,3,'2025-04-17','PENDING'),(18,47,3,'2025-04-17','PENDING'),(19,57,3,'2025-04-17','PENDING');
 /*!40000 ALTER TABLE `application` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -166,7 +166,7 @@ CREATE TABLE `careerfair` (
                               `date` date DEFAULT NULL,
                               `location` varchar(100) DEFAULT NULL,
                               PRIMARY KEY (`fairID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -175,6 +175,7 @@ CREATE TABLE `careerfair` (
 
 LOCK TABLES `careerfair` WRITE;
 /*!40000 ALTER TABLE `careerfair` DISABLE KEYS */;
+INSERT INTO `careerfair` VALUES (1,'qq','qq','2025-04-18','richard hall'),(2,'qq','qq','2025-04-18','richard hall'),(3,'a','a','2025-04-19','a'),(4,'a','a','2025-04-19','a');
 /*!40000 ALTER TABLE `careerfair` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -211,7 +212,7 @@ CREATE TABLE `certification` (
                                  `issuingOrganization` varchar(100) NOT NULL,
                                  PRIMARY KEY (`certificationID`),
                                  UNIQUE KEY `unique_certification` (`name`,`issuingOrganization`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -220,6 +221,7 @@ CREATE TABLE `certification` (
 
 LOCK TABLES `certification` WRITE;
 /*!40000 ALTER TABLE `certification` DISABLE KEYS */;
+INSERT INTO `certification` VALUES (1,'java','sdjksk');
 /*!40000 ALTER TABLE `certification` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -385,7 +387,7 @@ CREATE TABLE `interview` (
                              KEY `fk_interview_recruiter` (`recruiterID`),
                              CONSTRAINT `fk_interview_application` FOREIGN KEY (`applicationID`) REFERENCES `application` (`applicationID`) ON DELETE CASCADE ON UPDATE CASCADE,
                              CONSTRAINT `fk_interview_recruiter` FOREIGN KEY (`recruiterID`) REFERENCES `recruiter` (`recruiterID`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -394,7 +396,7 @@ CREATE TABLE `interview` (
 
 LOCK TABLES `interview` WRITE;
 /*!40000 ALTER TABLE `interview` DISABLE KEYS */;
-INSERT INTO `interview` VALUES (1,1,8,'2025-03-31 00:00:00','SCHEDULED',NULL,'PENDING'),(2,4,11,'2025-03-29 00:00:00','SCHEDULED',NULL,'PENDING'),(3,5,8,'2025-03-24 00:00:00','COMPLETED','Good technical skills, needs improvement in communication.','SELECTED'),(4,6,10,'2025-03-21 00:00:00','COMPLETED','Excellent frontend skills and problem-solving abilities.','SELECTED'),(5,7,9,'2025-03-16 00:00:00','COMPLETED','Perfect fit for the role with great analytical skills.','SELECTED'),(6,10,9,'2025-05-01 14:00:00','SCHEDULED',NULL,'PENDING');
+INSERT INTO `interview` VALUES (1,1,8,'2025-03-31 00:00:00','SCHEDULED',NULL,'PENDING'),(2,4,11,'2025-03-29 00:00:00','SCHEDULED',NULL,'PENDING'),(3,5,8,'2025-03-24 00:00:00','COMPLETED','Good technical skills, needs improvement in communication.','SELECTED'),(4,6,10,'2025-03-21 00:00:00','COMPLETED','Excellent frontend skills and problem-solving abilities.','SELECTED'),(5,7,9,'2025-03-16 00:00:00','COMPLETED','Perfect fit for the role with great analytical skills.','SELECTED'),(6,10,9,'2025-05-01 14:00:00','SCHEDULED',NULL,'PENDING'),(7,18,9,'2025-04-18 00:00:00','COMPLETED','shsh','SELECTED');
 /*!40000 ALTER TABLE `interview` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -443,7 +445,7 @@ CREATE TABLE `interviewexperience` (
                                        CONSTRAINT `fk_experience_interview` FOREIGN KEY (`interviewID`) REFERENCES `interview` (`interviewID`) ON DELETE CASCADE ON UPDATE CASCADE,
                                        CONSTRAINT `fk_experience_student` FOREIGN KEY (`studentID`) REFERENCES `student` (`studentID`) ON DELETE CASCADE ON UPDATE CASCADE,
                                        CONSTRAINT `interviewexperience_chk_1` CHECK (((`rating` >= 1) and (`rating` <= 5)))
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -452,7 +454,7 @@ CREATE TABLE `interviewexperience` (
 
 LOCK TABLES `interviewexperience` WRITE;
 /*!40000 ALTER TABLE `interviewexperience` DISABLE KEYS */;
-INSERT INTO `interviewexperience` VALUES (1,3,5,'The interview was challenging but fair. They focused on problem-solving skills.',4,'2025-03-25'),(2,4,5,'Great experience. The interviewer was friendly and asked relevant questions.',5,'2025-03-22'),(3,5,6,'Tough technical questions but overall a good learning experience.',4,'2025-03-17');
+INSERT INTO `interviewexperience` VALUES (1,3,5,'The interview was challenging but fair. They focused on problem-solving skills.',4,'2025-03-25'),(2,4,5,'Great experience. The interviewer was friendly and asked relevant questions.',5,'2025-03-22'),(3,5,6,'Tough technical questions but overall a good learning experience.',4,'2025-03-17'),(4,6,18,'They were very friendly and asked about my project.',5,'2025-04-17'),(8,6,47,'They were very friendly and asked about my project.',5,'2025-04-17'),(9,7,47,'aaaaaaaaaaaa',3,'2025-04-17');
 /*!40000 ALTER TABLE `interviewexperience` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -476,7 +478,7 @@ CREATE TABLE `joblisting` (
                               PRIMARY KEY (`jobID`),
                               KEY `fk_job_company` (`companyID`),
                               CONSTRAINT `fk_job_company` FOREIGN KEY (`companyID`) REFERENCES `company` (`companyID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -485,7 +487,7 @@ CREATE TABLE `joblisting` (
 
 LOCK TABLES `joblisting` WRITE;
 /*!40000 ALTER TABLE `joblisting` DISABLE KEYS */;
-INSERT INTO `joblisting` VALUES (1,1,'Software Engineer','Developing and maintaining software applications.',95000.00,'FULL_TIME','2025-04-25','2025-03-26',1),(2,1,'Software Intern','Summer internship for software development.',25.00,'INTERNSHIP','2025-05-25','2025-03-26',1),(3,2,'Data Analyst','Analyzing data and creating reports for business insights.',85000.00,'FULL_TIME','2025-05-10','2025-03-26',1),(4,3,'Frontend Developer','Creating user-friendly interfaces using modern frameworks.',90000.00,'FULL_TIME','2025-04-15','2025-03-26',1),(5,3,'Part-time Web Developer','Creating websites and web applications.',30.00,'PART_TIME','2025-04-10','2025-03-26',1),(6,4,'Database Administrator','Managing and maintaining databases.',100000.00,'FULL_TIME','2025-04-20','2025-03-26',1);
+INSERT INTO `joblisting` VALUES (1,1,'Software Engineer','Developing and maintaining software applications.',95000.00,'FULL_TIME','2025-04-25','2025-03-26',1),(2,1,'Software Intern','Summer internship for software development.',25.00,'INTERNSHIP','2025-05-25','2025-03-26',1),(3,2,'Data Analyst','Analyzing data and creating reports for business insights.',85000.00,'FULL_TIME','2025-05-10','2025-03-26',1),(4,3,'Frontend Developer','Creating user-friendly interfaces using modern frameworks.',90000.00,'FULL_TIME','2025-04-15','2025-03-26',1),(5,3,'Part-time Web Developer','Creating websites and web applications.',30.00,'PART_TIME','2025-04-10','2025-03-26',1),(6,4,'Database Administrator','Managing and maintaining databases.',100000.00,'FULL_TIME','2025-04-20','2025-03-26',1),(19,1,'1','1',1.00,'INTERNSHIP','1111-11-11','2025-04-17',1),(20,1,'1','1',1.00,'PART_TIME','1111-11-11','2025-04-17',1);
 /*!40000 ALTER TABLE `joblisting` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -655,7 +657,7 @@ CREATE TABLE `recruiter` (
 
 LOCK TABLES `recruiter` WRITE;
 /*!40000 ALTER TABLE `recruiter` DISABLE KEYS */;
-INSERT INTO `recruiter` VALUES (8,1,'Technical Recruiter'),(9,2,'HR Manager'),(10,3,'Talent Acquisition Specialist'),(11,4,'HR Director'),(35,1,'HR Manager');
+INSERT INTO `recruiter` VALUES (8,1,'Technical Recruiter'),(9,2,'HR Manager'),(10,3,'Talent Acquisition Specialist'),(11,4,'HR Director'),(35,1,'HR Manager'),(44,1,'HR'),(48,1,'HR'),(49,1,'HR'),(50,1,'HR'),(51,1,'HR'),(53,4,'12'),(55,1,'11'),(60,1,'hr'),(63,3,'ceo');
 /*!40000 ALTER TABLE `recruiter` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -672,7 +674,7 @@ CREATE TABLE `skill` (
                          `description` text,
                          PRIMARY KEY (`skillID`),
                          UNIQUE KEY `unique_skill_name` (`skillName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -681,6 +683,7 @@ CREATE TABLE `skill` (
 
 LOCK TABLES `skill` WRITE;
 /*!40000 ALTER TABLE `skill` DISABLE KEYS */;
+INSERT INTO `skill` VALUES (1,'java','sdjksk'),(2,'python','sdjksk');
 /*!40000 ALTER TABLE `skill` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -740,7 +743,7 @@ CREATE TABLE `student` (
 
 LOCK TABLES `student` WRITE;
 /*!40000 ALTER TABLE `student` DISABLE KEYS */;
-INSERT INTO `student` VALUES (3,1,'Computer Science',3.80,'Experienced in Java, Python, and web development.',0,3),(4,1,'Information Systems',3.60,'Skills in database management and system analysis.',0,2),(5,2,'Software Engineering',3.90,'Full-stack developer with experience in React and Node.js.',0,2),(6,3,'Data Science',3.70,'Proficient in statistical analysis and machine learning.',0,1),(7,4,'Cybersecurity',3.50,'Knowledge in network security and ethical hacking.',0,1),(12,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(13,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(14,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(15,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(18,1,'CS',4.00,'resume',0,0),(19,1,'CS',4.00,'resume',0,0),(27,1,'CS',4.00,'resume',0,0),(38,1,'CS',4.00,'resume',0,0),(39,1,'CS',4.00,'resume',0,1);
+INSERT INTO `student` VALUES (3,1,'Computer Science',3.80,'Experienced in Java, Python, and web development.',0,3),(4,1,'Information Systems',3.60,'Skills in database management and system analysis.',0,2),(5,2,'Software Engineering',3.90,'Full-stack developer with experience in React and Node.js.',0,2),(6,3,'Data Science',3.70,'Proficient in statistical analysis and machine learning.',0,1),(7,4,'Cybersecurity',3.50,'Knowledge in network security and ethical hacking.',0,1),(12,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(13,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(14,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(15,1,'Computer Science',3.80,'Experienced in Java and Spring Boot',0,0),(18,1,'CS',4.00,'resume',0,0),(19,1,'CS',4.00,'resume',0,0),(27,1,'CS',4.00,'resume',0,0),(38,1,'CS',4.00,'resume',0,0),(39,1,'CS',4.00,'resume',0,1),(40,1,'CS',4.00,'resume',0,4),(47,1,'CS',4.00,'resume',0,3),(54,1,'CS',4.00,'resume',0,0),(56,1,'CS',4.00,'resume',0,0),(57,1,'CS',4.00,'resume',0,2),(59,1,'CS',4.00,'resume',0,0),(61,1,'CS',4.00,'resume',0,1),(62,1,'CS',4.00,'resume',0,0);
 /*!40000 ALTER TABLE `student` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -815,6 +818,7 @@ CREATE TABLE `studentcertification` (
 
 LOCK TABLES `studentcertification` WRITE;
 /*!40000 ALTER TABLE `studentcertification` DISABLE KEYS */;
+INSERT INTO `studentcertification` VALUES (62,1,'2024-11-11','2222-02-22','null');
 /*!40000 ALTER TABLE `studentcertification` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -842,6 +846,7 @@ CREATE TABLE `studentskill` (
 
 LOCK TABLES `studentskill` WRITE;
 /*!40000 ALTER TABLE `studentskill` DISABLE KEYS */;
+INSERT INTO `studentskill` VALUES (62,1,'BEGINNER'),(62,2,'BEGINNER');
 /*!40000 ALTER TABLE `studentskill` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -861,7 +866,7 @@ CREATE TABLE `user` (
                         `role` enum('STUDENT','ADMIN','RECRUITER') NOT NULL,
                         PRIMARY KEY (`userID`),
                         UNIQUE KEY `unique_user_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -870,7 +875,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'John','Admin','john.admin@university.edu','password123','ADMIN'),(2,'Sarah','Manager','sarah.manager@university.edu','password123','ADMIN'),(3,'Alice','Smith','alice.smith@university.edu','password123','STUDENT'),(4,'Bob','Johnson','bob.johnson@university.edu','password123','STUDENT'),(5,'Charlie','Brown','charlie.brown@university.edu','password123','STUDENT'),(6,'Diana','Prince','diana.prince@university.edu','password123','STUDENT'),(7,'Ethan','Hunt','ethan.hunt@university.edu','password123','STUDENT'),(8,'Tom','Recruiter','tom.recruiter@techinc.com','password123','RECRUITER'),(9,'Jane','Hire','jane.hire@globalsoft.com','password123','RECRUITER'),(10,'Michael','Scott','michael.scott@innovatech.com','password123','RECRUITER'),(11,'Pam','Beesly','pam.beesly@dataforge.com','password123','RECRUITER'),(12,'John','Doe','j@example.com','$2a$10$fAZ9yNkQUF.V4kImIlboHOPH8LVabq28SKh.iMZ2BKo0pEP5V1HCq','STUDENT'),(13,'John','Doe','j22@example.com','$2a$10$0j68c2ThDzGfHIi0zgUxyOmFZ43SdRpPwtcF1Tc0ou/9i.ziRg2zy','STUDENT'),(14,'John','Doe','j3aa2132@example.com','$2a$10$FpU/JQi3yNQDZ6EijZ1ggetAjOITt7mykTUwRdml7n6zRATOxxO.G','STUDENT'),(15,'John','Doe','j3a132@example.com','$2a$10$4lMrdCeh2M7JrPYjwoUOt.p1t91uDletYRaib50NL/BllEwvI9Yca','STUDENT'),(18,'a','a','a@gmail.com','$2a$10$LVw8AYnGdkLuMP8MSv3LXebi6YyFuuc8eufyXsZK/GuQqKNKz.4I6','STUDENT'),(19,'John','Doe','jodsfdhn.doe@example.com','$2a$10$w1vjovq3qBYwfoE6uvqny.VZD3Kwe/0PGdKYY.stV8dVOGrILvcVG','STUDENT'),(27,'John','Doe','jdoe@example.com','$2a$10$5jSqV2/bTkemACH.zOl2VenBKpihCgnMdmE5Bk/MS0ll9t07ujbIy','STUDENT'),(35,'Jane','Smith','janrrrsmith@techinc.com','$2a$10$U1XZWvmOL.UxYgQr2XKTKOIx/wyAymd.RcX/6hBXuFikjdHuc6qei','RECRUITER'),(38,'asdad','sdada','asadad@gmail.com','$2a$10$/GDQwipG8sfPZa4Qs3SM6eGUUNmH1xk.s.WTgzw6NJrIv/Sm3Qy6.','STUDENT'),(39,'a','a','student@gmail.com','$2a$10$my3EQge5TzPVosBZ8rOVQeKxK1oBlvG0AEg4D6etwlXP/mmZPlbkC','STUDENT');
+INSERT INTO `user` VALUES (1,'John','Admin','john.admin@university.edu','password123','ADMIN'),(2,'Sarah','Manager','sarah.manager@university.edu','password123','ADMIN'),(3,'Alice','Smith','alice.smith@university.edu','password123','STUDENT'),(4,'Bob','Johnson','bob.johnson@university.edu','password123','STUDENT'),(5,'Charlie','Brown','charlie.brown@university.edu','password123','STUDENT'),(6,'Diana','Prince','diana.prince@university.edu','password123','STUDENT'),(7,'Ethan','Hunt','ethan.hunt@university.edu','password123','STUDENT'),(8,'Tom','Recruiter','tom.recruiter@techinc.com','password123','RECRUITER'),(9,'Jane','Hire','jane.hire@globalsoft.com','password123','RECRUITER'),(10,'Michael','Scott','michael.scott@innovatech.com','password123','RECRUITER'),(11,'Pam','Beesly','pam.beesly@dataforge.com','password123','RECRUITER'),(12,'John','Doe','j@example.com','$2a$10$fAZ9yNkQUF.V4kImIlboHOPH8LVabq28SKh.iMZ2BKo0pEP5V1HCq','STUDENT'),(13,'John','Doe','j22@example.com','$2a$10$0j68c2ThDzGfHIi0zgUxyOmFZ43SdRpPwtcF1Tc0ou/9i.ziRg2zy','STUDENT'),(14,'John','Doe','j3aa2132@example.com','$2a$10$FpU/JQi3yNQDZ6EijZ1ggetAjOITt7mykTUwRdml7n6zRATOxxO.G','STUDENT'),(15,'John','Doe','j3a132@example.com','$2a$10$4lMrdCeh2M7JrPYjwoUOt.p1t91uDletYRaib50NL/BllEwvI9Yca','STUDENT'),(18,'a','a','a@gmail.com','$2a$10$LVw8AYnGdkLuMP8MSv3LXebi6YyFuuc8eufyXsZK/GuQqKNKz.4I6','STUDENT'),(19,'John','Doe','jodsfdhn.doe@example.com','$2a$10$w1vjovq3qBYwfoE6uvqny.VZD3Kwe/0PGdKYY.stV8dVOGrILvcVG','STUDENT'),(27,'John','Doe','jdoe@example.com','$2a$10$5jSqV2/bTkemACH.zOl2VenBKpihCgnMdmE5Bk/MS0ll9t07ujbIy','STUDENT'),(35,'Jane','Smith','janrrrsmith@techinc.com','$2a$10$U1XZWvmOL.UxYgQr2XKTKOIx/wyAymd.RcX/6hBXuFikjdHuc6qei','RECRUITER'),(38,'asdad','sdada','asadad@gmail.com','$2a$10$/GDQwipG8sfPZa4Qs3SM6eGUUNmH1xk.s.WTgzw6NJrIv/Sm3Qy6.','STUDENT'),(39,'a','a','student@gmail.com','$2a$10$my3EQge5TzPVosBZ8rOVQeKxK1oBlvG0AEg4D6etwlXP/mmZPlbkC','STUDENT'),(40,'aa','aa','saravjit@gmail.com','$2a$10$xRI6THsxUX87ZU1s8sLLsuastNxiFr743Bz2a7bu7z2xVYt9sr7Xi','STUDENT'),(44,'a','a','company2@gmail.com','$2a$10$F6ywfzJceN2SoLd6GHOEDeuFc9dTbQn4zCqbwKt5Cz6042tykmZMy','RECRUITER'),(45,'a','a','admin@gmail.com','$2a$10$sWPE9ubMXcLl42q19LUPtOowz5qvurHldn6jTeesMmy7J0egI2YRW','ADMIN'),(46,'a','a','admin2@gmail.com','$2a$10$e3cWZqzQ2jUEmNSNFyYdDe4iotz5bX9Q/dYEg.2KJMnDF9TdRd6Ze','ADMIN'),(47,'a','a','ratan@gmail.com','$2a$10$ry8WRnkySfErFq0Zw4oUj..gwTjhuyZG2ycrNctvkjXkTJwUtaj/q','STUDENT'),(48,'as','as','asas@gmail.com','$2a$10$VRkQLdib3CUvwbapWPDhBu9/FC8s/Ml0kh.plrYGZ3/mMrqk4xR.y','RECRUITER'),(49,'dinesh','dinesh','dinesh@gmail.com','$2a$10$TlfQNL/UoA1oTvpXgGwlW.qvdslFOBY8L9xu6r0rsz2.PKV/Prfhq','RECRUITER'),(50,'aa','aa','aa@gmail.com','$2a$10$W1WIS9ac.v0bVbrCn9cine5iUjvO8Lo8MNxupMBAtyUAdcnIyY4bK','RECRUITER'),(51,'aa','aa','aa111@gmail.com','$2a$10$PleULwWxbf4gzN7oBJaoN.mNVHG1BREqnwA5tEOw5EB.U6v07eooS','RECRUITER'),(53,'a','a','aa1212@gmail.com','$2a$10$DDhq3TPOC51fJ4vOf2OdsuVqgGPn9AJQyJnK3NsUT5PvD0VYD/hKq','RECRUITER'),(54,'a','aa','uswer@gmail.com','$2a$10$6C/1WPvRry8Ogm7a1YWbP.w03GdJOb3kQYj71GpuDB6XzmUByArxC','STUDENT'),(55,'aa','aa','aa111111@gmail.com','$2a$10$l8pI5.K1rlK9rQix6qBaZe3v9C/YRJZtzqsroog2kPjmJ6l3UsjRG','RECRUITER'),(56,'aa','aa','aaa@gmail.com','$2a$10$jt.JAN0UD3ljcAbyahETRunnl9JxOnnrBf0UEajn.diVjezbJk3C.','STUDENT'),(57,'a','a','thi@gmail.com','$2a$10$M1mPXwMc1BuyEB138OynXOHTabBzItzqmFGQlg3hLZb0jH9GsiRY.','STUDENT'),(58,'admin','admin','admin121@gmail.com','$2a$10$qgYeQhygGyi5r455pbtgC.D/WzQs5eW17EYf74CAqXsgKUASorrhi','ADMIN'),(59,'a','a','student12@gmail.com','$2a$10$43rMHj/lgJ0xu2mWJwtHqutWFootTMagAdUMBL349Wg5CLrzUl8ky','STUDENT'),(60,'emp','emp','emp@gmail.com','$2a$10$e.GbJZtirNt2v1gIEfaGJuKrWRW7rMJMD2K.3vvBC9vFNld2WEw..','RECRUITER'),(61,'d','d','d@gmail.com','$2a$10$lG1N2eC8QytOn.iXkfd4B.wXmc4cwappXm7WBWGx3aKseaxvS8sA6','STUDENT'),(62,'dinesh','dinesh','dinesh1@gmail.com','$2a$10$XJjuy0iyRZyhqJcn4wqGROO.r3tFyieZj/oUZe7BzsNGnRGyAUvPy','STUDENT'),(63,'d','d','dinesh2@gmail.com','$2a$10$yVXXa.K8APR1M751.tKqVeWhjrLoyG.cu0hKCbVSZVn.ybb99cVwO','RECRUITER');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1002,6 +1007,59 @@ WHERE j.isActive = TRUE
              INNER JOIN Student s ON s.studentID = ss.studentID
     WHERE s.studentID = student_id
 );
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_add_student_certification` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_add_student_certification`(
+  IN  p_student_id      INT,
+  IN  p_cert_name       VARCHAR(100),
+  IN  p_issuing_org     VARCHAR(100),
+  IN  p_cert_date       DATE,
+  IN  p_expiry_date     DATE,         -- Can be NULL
+  IN  p_credential_id   VARCHAR(100), -- Can be NULL
+  OUT p_certification_id INT
+)
+BEGIN
+    DECLARE v_cert_id INT;
+
+    -- Check if base certification exists
+SELECT certificationID INTO v_cert_id
+FROM certification
+WHERE name = p_cert_name AND issuingOrganization = p_issuing_org;
+
+-- If not, create it
+IF v_cert_id IS NULL THEN
+INSERT INTO certification (name, issuingOrganization)
+VALUES (p_cert_name, p_issuing_org);
+SET v_cert_id = LAST_INSERT_ID();
+END IF;
+
+-- Link certification to student (replace if exists, or insert)
+INSERT INTO studentcertification
+(studentID, certificationID, certificationDate, expiryDate, credentialID)
+VALUES
+    (p_student_id, v_cert_id, p_cert_date, p_expiry_date, p_credential_id)
+    ON DUPLICATE KEY UPDATE
+                         certificationDate = VALUES(certificationDate),
+                         expiryDate = VALUES(expiryDate),
+                         credentialID = VALUES(credentialID);
+
+-- Return the certification ID
+SET p_certification_id = v_cert_id;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1428,6 +1486,52 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_find_or_create_skill_and_link_student` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_find_or_create_skill_and_link_student`(
+  IN  p_student_id INT,
+  IN  p_skill_name VARCHAR(100),
+  OUT p_skill_id   INT,
+  OUT p_skill_desc TEXT
+)
+BEGIN
+    DECLARE v_skill_id INT;
+    DECLARE v_skill_desc TEXT;
+
+    -- Check if skill exists
+SELECT skillID, description INTO v_skill_id, v_skill_desc
+FROM skill
+WHERE skillName = p_skill_name;
+
+-- If skill doesn't exist, create it
+IF v_skill_id IS NULL THEN
+INSERT INTO skill (skillName, description) VALUES (p_skill_name, NULL); -- Assuming description is optional
+SET v_skill_id = LAST_INSERT_ID();
+        SET v_skill_desc = NULL; -- Or fetch the default if any
+END IF;
+
+-- Link skill to student (ignore if already linked)
+INSERT IGNORE INTO studentskill (studentID, skillID, proficiencyLevel)
+VALUES (p_student_id, v_skill_id, 'BEGINNER'); -- Default proficiency
+
+-- Return the skill ID and description
+SET p_skill_id = v_skill_id;
+    SET p_skill_desc = v_skill_desc;
+
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_get_active_joblistings` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1540,7 +1644,8 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_all_careerfairs`()
 BEGIN
 SELECT
-    fairID,
+    eventID,
+    adminID,
     title,
     description,
     date,
@@ -1591,7 +1696,7 @@ SELECT
     companyID,
     companyName,
     industry,
-    email
+    companyEmail
 FROM `company`;
 END ;;
 DELIMITER ;
@@ -1905,6 +2010,37 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_application_by_job_and_student` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_application_by_job_and_student`(
+  IN p_job_id INT,
+  IN p_student_id INT
+)
+BEGIN
+SELECT
+    applicationID,
+    studentID,
+    jobID,
+    applicationDate,
+    status
+FROM
+    application
+WHERE
+    jobID = p_job_id AND studentID = p_student_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_get_careerfair_by_id` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2003,7 +2139,7 @@ SELECT
     companyID,
     companyName,
     industry,
-    email
+    companyEmail
 FROM `company`
 WHERE companyID = p_company_id;
 END ;;
@@ -2602,6 +2738,45 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_students_by_ids` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_students_by_ids`(
+  IN p_student_ids TEXT -- Use TEXT for potentially long comma-separated list
+)
+BEGIN
+    -- Select student details, joining with user table for name/email
+    -- FIND_IN_SET is suitable for comma-separated strings
+SELECT
+    s.studentID,
+    s.collegeID,
+    s.major,
+    s.gpa,
+    s.resume,
+    s.isPlaced,
+    s.totalApplicationsCount,
+    u.firstName, -- Include user details needed by frontend/mapper
+    u.lastName,
+    u.email
+FROM
+    student s
+        JOIN
+    user u ON s.studentID = u.userID
+WHERE
+    FIND_IN_SET(s.studentID, p_student_ids);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_get_students_by_major` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2686,6 +2861,63 @@ SELECT
     totalApplicationsCount
 FROM `student`
 WHERE studentID = p_student_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_student_certifications` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_student_certifications`(
+  IN p_student_id INT
+)
+BEGIN
+SELECT
+    c.certificationID,
+    c.name,
+    c.issuingOrganization,
+    sc.certificationDate,
+    sc.expiryDate,
+    sc.credentialID
+FROM certification c
+         JOIN studentcertification sc ON c.certificationID = sc.certificationID
+WHERE sc.studentID = p_student_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_get_student_skills` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_student_skills`(
+  IN p_student_id INT
+)
+BEGIN
+SELECT
+    sk.skillID,
+    sk.skillName,
+    sk.description
+FROM skill sk
+         JOIN studentskill ss ON sk.skillID = ss.skillID
+WHERE ss.studentID = p_student_id;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -2860,10 +3092,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_insert_careerfair`(
   OUT p_new_id      INT
 )
 BEGIN
-INSERT INTO `careerfair`
+INSERT INTO `event`
 (title, description, date, location)
 VALUES
-    (p_title, p_description, p_date, p_location);
+    (eventID, adminID, title, description,date,location);
 
 SET p_new_id = LAST_INSERT_ID();
 END ;;
@@ -3018,6 +3250,58 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_insert_joblisting_by_company_name` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_insert_joblisting_by_company_name`(
+  IN  p_company_name   VARCHAR(255),
+  IN  p_title          VARCHAR(255),
+  IN  p_description    TEXT,
+  IN  p_salary         DECIMAL(10,2),
+  IN  p_job_type       VARCHAR(20),
+  IN  p_deadline       DATE,
+  IN  p_post_date      DATE,
+  IN  p_is_active      TINYINT(1),
+  OUT p_new_job_id     INT
+)
+BEGIN
+  DECLARE v_company_id INT;
+
+  -- Look up the companyID from the company table
+SELECT companyID
+INTO v_company_id
+FROM `company`
+WHERE companyName = p_company_name
+    LIMIT 1;
+
+-- If no matching company was found, raise an error
+IF v_company_id IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Unknown company name: '
+                       , MYSQL_ERRNO = 1644;
+END IF;
+
+  -- Insert the new joblisting using the computed companyID
+INSERT INTO `joblisting`
+(companyID, title, description, salary, jobType, deadline, postDate, isActive)
+VALUES
+    (v_company_id, p_title, p_description, p_salary, p_job_type, p_deadline, p_post_date, p_is_active);
+
+-- Return the generated key
+SET p_new_job_id = LAST_INSERT_ID();
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_insert_joblisting_full` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -3140,6 +3424,58 @@ VALUES
 
 SELECT ROW_COUNT()
 INTO p_rows_inserted;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_remove_student_certification` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_remove_student_certification`(
+  IN  p_student_id      INT,
+  IN  p_certification_id INT,
+  OUT p_rows_deleted    INT
+)
+BEGIN
+DELETE FROM studentcertification
+WHERE studentID = p_student_id AND certificationID = p_certification_id;
+
+SELECT ROW_COUNT() INTO p_rows_deleted;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_remove_student_skill` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_remove_student_skill`(
+  IN  p_student_id INT,
+  IN  p_skill_id   INT,
+  OUT p_rows_deleted INT
+)
+BEGIN
+DELETE FROM studentskill
+WHERE studentID = p_student_id AND skillID = p_skill_id;
+
+SELECT ROW_COUNT() INTO p_rows_deleted;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -3650,4 +3986,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-17  0:35:26
+-- Dump completed on 2025-04-17 12:22:56
