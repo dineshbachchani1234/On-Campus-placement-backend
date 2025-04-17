@@ -150,7 +150,6 @@ public class JobListingRepositoryImpl implements JobListingRepository {
     return jobListing;
   }
 
-
   @Override
   public boolean deleteById(Integer id) {
     try {
@@ -173,7 +172,6 @@ public class JobListingRepositoryImpl implements JobListingRepository {
       return false;
     }
   }
-
 
   @Override
   public Optional<JobListing> findById(Integer id) {

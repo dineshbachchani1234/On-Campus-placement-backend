@@ -3,6 +3,7 @@ package com.campus.repository;
 import com.campus.model.Application;
 import com.campus.model.Company;
 import com.campus.model.Interview;
+import com.campus.model.InterviewExperience;
 import com.campus.model.JobListing;
 import com.campus.model.Recruiter;
 

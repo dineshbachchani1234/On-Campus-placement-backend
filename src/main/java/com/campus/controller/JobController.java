@@ -129,10 +129,11 @@ public class JobController {
   @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<?> updateJob(@PathVariable Integer id,  @RequestBody JobListing jobListing) {
     // Ensure ID consistency
-    if (!id.equals(jobListing.getJobId())) {
-      return ResponseEntity.badRequest()
-          .body(MessageResponse.error("ID in path variable doesn't match ID in request body"));
-    }
+//    if (!id.equals(jobListing.getJobId())) {
+//      return ResponseEntity.badRequest()
+//          .body(MessageResponse.error("ID in path variable doesn't match ID in request body"));
+//    }
+    jobListing.setJobId(id);
 
     try {
       JobListing updatedJob = jobService.updateJob(jobListing);

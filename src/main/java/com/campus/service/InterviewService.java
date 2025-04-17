@@ -107,4 +107,6 @@ public interface InterviewService {
   boolean rescheduleInterview(Integer interviewId, LocalDateTime newDateTime);
 
   List<Interview> getInterviewsByStudentId(Integer studentId);
+
+  List<InterviewExperience> getAllInterviewExperiences();
 }

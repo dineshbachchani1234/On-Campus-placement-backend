@@ -191,7 +191,6 @@ public class InterviewExperienceRepositoryImpl implements InterviewExperienceRep
     }
   }
 
-
   @Override
   public List<InterviewExperience> findAll() {
     try {
@@ -211,7 +210,6 @@ public class InterviewExperienceRepositoryImpl implements InterviewExperienceRep
       return List.of();
     }
   }
-
 
   @Override
   public List<InterviewExperience> findByInterviewId(Integer interviewId) {
@@ -261,4 +259,10 @@ public class InterviewExperienceRepositoryImpl implements InterviewExperienceRep
     }
   }
 
+
+  @Override
+  public List<InterviewExperience> findAllExperiences() {
+    String sql = "SELECT * FROM interviewexperience ORDER BY postDate DESC";
+    return jdbcTemplate.query(sql, experienceRowMapper);
+  }
 }

@@ -180,10 +180,15 @@ public class InterviewServiceImpl implements InterviewService {
     // Then get all interviews for these applications
     List<Interview> interviews = new ArrayList<>();
     for (Application application : applications) {
-      List<Interview> appInterviews = interviewRepository.findByStudentId(application.getApplicationId());
+      List<Interview> appInterviews = interviewRepository.findByStudentId(studentId);
       interviews.addAll(appInterviews);
     }
 
     return interviews;
+  }
+
+  @Override
+  public List<InterviewExperience> getAllInterviewExperiences() {
+    return experienceRepository.findAllExperiences();
   }
 }

@@ -2,6 +2,7 @@ package com.campus.repository;
 
 import com.campus.model.Interview;
 
+import com.campus.model.InterviewExperience;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,4 +60,5 @@ public interface InterviewRepository extends BaseRepository<Interview, Integer> 
   boolean updateResult(Integer interviewId, Interview.InterviewResult result, String feedback);
 
   List<Interview> findByStudentId(Integer studentId);
+
 }

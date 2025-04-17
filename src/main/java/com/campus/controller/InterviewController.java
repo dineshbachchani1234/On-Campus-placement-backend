@@ -241,4 +241,12 @@ public class InterviewController {
     List<Interview> interviews = interviewService.getInterviewsByStudentId(studentId);
     return ResponseEntity.ok(interviews);
   }
+
+  @GetMapping("/experiences")
+  public ResponseEntity<List<InterviewExperience>> getAllInterviewExperiences() {
+    List<InterviewExperience> experiences = interviewService.getAllInterviewExperiences();
+    return ResponseEntity.ok(experiences);
+  }
+
+
 }

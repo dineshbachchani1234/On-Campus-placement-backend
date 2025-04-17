@@ -22,4 +22,7 @@ public interface InterviewExperienceRepository extends BaseRepository<InterviewE
    * @return List of experiences shared by the student
    */
   List<InterviewExperience> findByStudentId(Integer studentId);
+
+  List<InterviewExperience> findAllExperiences();
+
 }
