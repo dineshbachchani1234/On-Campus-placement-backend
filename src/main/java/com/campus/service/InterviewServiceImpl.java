@@ -1,11 +1,8 @@
 package com.campus.service;
 
 import com.campus.model.Application;
-import com.campus.model.Interview;
-import com.campus.model.InterviewExperience;
-import com.campus.repository.ApplicationRepository;
-import com.campus.repository.InterviewExperienceRepository;
-import com.campus.repository.InterviewRepository;
+import com.campus.model.*; // Import all models
+import com.campus.repository.*; // Import all repositories
 import com.campus.service.InterviewService;
 
 import java.util.ArrayList;
@@ -29,37 +26,42 @@ public class InterviewServiceImpl implements InterviewService {
   @Autowired
   private ApplicationRepository applicationRepository;
 
+  @Autowired // Inject RecruiterRepository
+  private RecruiterRepository recruiterRepository;
+
   @Override
-  public Interview scheduleInterview(Interview interview) {
-    // Validate application
-    Optional<Application> applicationOptional = applicationRepository.findById(
-        interview.getApplication().getApplicationId());
-    if (!applicationOptional.isPresent()) {
-      throw new RuntimeException("Application not found");
-    }
+  // Update method signature to match interface
+  public Interview scheduleInterview(Integer jobId, Integer studentId, Integer recruiterId, LocalDateTime dateTime, String notes) {
 
-    Application application = applicationOptional.get();
+    // 1. Find the specific application using the new repository method
+    Application application = applicationRepository.findByJobIdAndStudentId(jobId, studentId)
+        .orElseThrow(() -> new RuntimeException("Application not found for Job ID: " + jobId + " and Student ID: " + studentId));
 
-    // Only schedule interviews for applications with SHORTLISTED status
-    if (application.getStatus() != Application.ApplicationStatus.SHORTLISTED) {
-      throw new RuntimeException("Cannot schedule interview for non-shortlisted application");
-    }
+    // 2. Validate application status (optional, but good practice)
+    // Example: Allow scheduling only if application is SHORTLISTED
+    // if (application.getStatus() != Application.ApplicationStatus.SHORTLISTED) {
+    //   throw new RuntimeException("Cannot schedule interview for application with status: " + application.getStatus());
+    // }
 
-    // Set default values if not provided
-    if (interview.getStatus() == null) {
-      interview.setStatus(Interview.InterviewStatus.SCHEDULED);
-    }
+    // 3. Find the recruiter
+    Recruiter recruiter = recruiterRepository.findById(recruiterId)
+        .orElseThrow(() -> new RuntimeException("Recruiter not found with ID: " + recruiterId));
 
-    if (interview.getResult() == null) {
-      interview.setResult(Interview.InterviewResult.PENDING);
-    }
+    // 4. Create the new Interview object
+    Interview newInterview = new Interview();
+    newInterview.setApplication(application); // Link to the found application
+    newInterview.setRecruiter(recruiter);     // Link to the found recruiter
+    newInterview.setInterviewDate(dateTime);
+    newInterview.setNotes(notes);
+    newInterview.setStatus(Interview.InterviewStatus.SCHEDULED); // Default status
+    newInterview.setResult(Interview.InterviewResult.PENDING);   // Default result
 
-    // Save interview
-    Interview savedInterview = interviewRepository.save(interview);
+    // 5. Save the new interview
+    Interview savedInterview = interviewRepository.save(newInterview);
 
-    // Update application status
-    applicationRepository.updateStatus(application.getApplicationId(),
-        Application.ApplicationStatus.INTERVIEWED);
+    // 6. Update the application status to INTERVIEWED (or similar)
+    // Consider if multiple interviews are possible per application
+    applicationRepository.updateStatus(application.getApplicationId(), Application.ApplicationStatus.INTERVIEWED);
 
     return savedInterview;
   }

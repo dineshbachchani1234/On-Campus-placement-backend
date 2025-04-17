@@ -242,6 +242,35 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     return apps;
   }
 
+  @Override
+  public Optional<Application> findByJobIdAndStudentId(Integer jobId, Integer studentId) {
+    try {
+      SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+          .withProcedureName("sp_get_application_by_job_and_student") // Assumed SP name
+          .returningResultSet("rs", applicationRowMapper);
+
+      MapSqlParameterSource in = new MapSqlParameterSource()
+          .addValue("p_job_id", jobId)
+          .addValue("p_student_id", studentId);
+
+      Map<String, Object> out = call.execute(in);
+
+      @SuppressWarnings("unchecked")
+      List<Application> list = (List<Application>) out.get("rs");
+      if (list.isEmpty()) {
+        return Optional.empty();
+      }
+      // Assuming jobID + studentID is unique for applications
+      return Optional.of(list.get(0));
+
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty(); // No application found
+    } catch (Exception e) {
+      System.err.println("sp_get_application_by_job_and_student failed: " + e.getMessage());
+      return Optional.empty(); // Or rethrow as a runtime exception
+    }
+  }
+
 
   @Override
   public List<Application> findByJobId(Integer jobId) {

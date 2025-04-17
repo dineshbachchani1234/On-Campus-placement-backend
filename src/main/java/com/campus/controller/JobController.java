@@ -2,7 +2,9 @@ package com.campus.controller;
 
 import com.campus.model.JobListing;
 import com.campus.model.MessageResponse;
+import com.campus.model.Student; // Added import
 import com.campus.service.JobService;
+import com.campus.service.StudentService; // Added import
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,9 @@ public class JobController {
 
   @Autowired
   private JobService jobService;
+
+  @Autowired // Added injection
+  private StudentService studentService;
 
   /**
    * Create a new job listing
@@ -204,5 +209,28 @@ public class JobController {
   public ResponseEntity<List<JobListing>> getRelevantJobsForStudent(@PathVariable Integer studentId) {
     List<JobListing> jobs = jobService.getRelevantJobsForStudent(studentId);
     return ResponseEntity.ok(jobs);
+  }
+
+  /**
+   * Get applicants for a specific job.
+   * @param jobId The ID of the job.
+   * @return List of students who applied for the job.
+   */
+  @GetMapping("/{jobId}/applicants")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')") // Secure endpoint
+  public ResponseEntity<List<Student>> getJobApplicants(@PathVariable Integer jobId) {
+    try {
+      List<Student> applicants = studentService.getApplicantsForJob(jobId);
+      // Note: Student objects should contain User details (name, email)
+      // due to the logic in StudentRepositoryImpl's row mapper.
+      // If sensitive data needs exclusion, use a DTO.
+      return ResponseEntity.ok(applicants);
+    } catch (Exception e) {
+      // Log the error server-side
+      System.err.println("Error fetching applicants for job " + jobId + ": " + e.getMessage());
+      // Return an appropriate error response (e.g., 500 Internal Server Error)
+      // Avoid sending detailed error messages to the client unless necessary.
+      return ResponseEntity.internalServerError().build();
+    }
   }
 }

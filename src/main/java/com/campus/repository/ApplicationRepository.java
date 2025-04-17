@@ -4,6 +4,7 @@ package com.campus.repository;
 import com.campus.model.Application;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ApplicationRepository extends BaseRepository<Application, Integer> {
   /**
@@ -19,6 +20,14 @@ public interface ApplicationRepository extends BaseRepository<Application, Integ
    * @return List of applications for the job
    */
   List<Application> findByJobId(Integer jobId);
+
+  /**
+   * Find a specific application by job ID and student ID.
+   * @param jobId The job ID.
+   * @param studentId The student ID.
+   * @return Optional containing the application if found.
+   */
+  Optional<Application> findByJobIdAndStudentId(Integer jobId, Integer studentId);
 
 
 

@@ -1,16 +1,17 @@
 package com.campus.controller;
 
-import com.campus.model.Interview;
-import com.campus.model.InterviewExperience;
-import com.campus.model.MessageResponse;
+import com.campus.model.*; // Import all models including DTO
 import com.campus.service.InterviewService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+// Removed: import org.springframework.security.access.prepost.PreAuthorize;
+// Removed: import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+// Removed: import javax.validation.Valid; // Removed as per user request
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,19 +28,42 @@ public class InterviewController {
   private InterviewService interviewService;
 
   /**
-   * Schedule a new interview
-   * @param interview The interview to schedule
-   * @return Scheduled interview
+   * Schedule a new interview using details from the DTO.
+   * @param interviewRequest DTO containing jobId, studentId, recruiterId, dateTime, notes.
+   * @return The scheduled Interview object with HTTP status 201 (Created).
    */
   @PostMapping
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
-  public ResponseEntity<?> scheduleInterview(@RequestBody Interview interview) {
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed Authentication parameter, removed @Valid
+  public ResponseEntity<?> scheduleInterview(@RequestBody InterviewRequestDTO interviewRequest) {
     try {
-      Interview scheduledInterview = interviewService.scheduleInterview(interview);
-      return ResponseEntity.ok(scheduledInterview);
-    } catch (Exception e) {
+      // Get recruiterId directly from the DTO
+      Integer recruiterId = interviewRequest.getRecruiterId();
+      if (recruiterId == null) {
+          // Handle missing recruiterId if it's considered mandatory
+          return ResponseEntity.badRequest()
+              .body(MessageResponse.error("Recruiter ID is missing in the request."));
+      }
+
+      // Call the updated service method
+      Interview scheduledInterview = interviewService.scheduleInterview(
+          interviewRequest.getJobId(),
+          interviewRequest.getStudentId(),
+          recruiterId, // Pass the recruiter ID from the DTO
+          interviewRequest.getDateTime(),
+          interviewRequest.getNotes()
+      );
+      // Return 201 Created status with the created interview object
+      return ResponseEntity.status(HttpStatus.CREATED).body(scheduledInterview);
+    } catch (RuntimeException e) { // Catch specific exceptions if needed
+      // Log the error server-side
+      System.err.println("Error scheduling interview: " + e.getMessage());
       return ResponseEntity.badRequest()
-          .body(MessageResponse.error(e.getMessage()));
+          .body(MessageResponse.error("Failed to schedule interview: " + e.getMessage()));
+    } catch (Exception e) {
+       System.err.println("Unexpected error scheduling interview: " + e.getMessage());
+       return ResponseEntity.internalServerError()
+           .body(MessageResponse.error("An unexpected error occurred."));
     }
   }
 
@@ -76,7 +100,7 @@ public class InterviewController {
    * @return List of interviews conducted by the recruiter
    */
   @GetMapping("/recruiter/{recruiterId}")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<List<Interview>> getInterviewsByRecruiterId(@PathVariable Integer recruiterId) {
     List<Interview> interviews = interviewService.getInterviewsByRecruiterId(recruiterId);
     return ResponseEntity.ok(interviews);
@@ -88,7 +112,7 @@ public class InterviewController {
    * @return List of interviews with the specified status
    */
   @GetMapping("/status/{status}")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<List<Interview>> getInterviewsByStatus(@PathVariable Interview.InterviewStatus status) {
     List<Interview> interviews = interviewService.getInterviewsByStatus(status);
     return ResponseEntity.ok(interviews);
@@ -100,7 +124,7 @@ public class InterviewController {
    * @return List of interviews with the specified result
    */
   @GetMapping("/result/{result}")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<List<Interview>> getInterviewsByResult(@PathVariable Interview.InterviewResult result) {
     List<Interview> interviews = interviewService.getInterviewsByResult(result);
     return ResponseEntity.ok(interviews);
@@ -123,7 +147,7 @@ public class InterviewController {
    * @return Success message
    */
   @PutMapping("/{id}/status")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<?> updateInterviewStatus(
       @PathVariable Integer id,
       @RequestParam Interview.InterviewStatus status) {
@@ -145,7 +169,7 @@ public class InterviewController {
    * @return Success message
    */
   @PutMapping("/{id}/result")
-  @PreAuthorize("hasRole('RECRUITER')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER')")
   public ResponseEntity<?> updateInterviewResult(
       @PathVariable Integer id,
       @RequestParam Interview.InterviewResult result,
@@ -171,7 +195,7 @@ public class InterviewController {
    * @return Added interview experience
    */
   @PostMapping("/experiences")
-  @PreAuthorize("hasRole('STUDENT')")
+  // Removed: @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<?> addInterviewExperience(@RequestBody InterviewExperience experience) {
     try {
       InterviewExperience addedExperience = interviewService.addInterviewExperience(experience);
@@ -199,7 +223,7 @@ public class InterviewController {
    * @return Success message
    */
   @PutMapping("/{id}/cancel")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<?> cancelInterview(@PathVariable Integer id) {
     boolean cancelled = interviewService.cancelInterview(id);
 
@@ -217,7 +241,7 @@ public class InterviewController {
    * @return Success message
    */
   @PutMapping("/{id}/reschedule")
-  @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
+  // Removed: @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
   public ResponseEntity<?> rescheduleInterview(
       @PathVariable Integer id,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newDateTime) {

@@ -90,6 +90,15 @@ public class Interview {
     this.experiences = experiences;
   }
 
+  // Getter and Setter for notes
+  public String getNotes() {
+    return notes;
+  }
+
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
+
   @ManyToOne
   @JoinColumn(name = "recruiterID", nullable = false)
   private Recruiter recruiter;
@@ -103,6 +112,9 @@ public class Interview {
 
   @Column(name = "feedback", columnDefinition = "TEXT")
   private String feedback;
+
+  @Column(name = "notes", columnDefinition = "TEXT") // Added notes field
+  private String notes;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "result")

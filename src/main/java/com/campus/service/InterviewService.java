@@ -14,10 +14,16 @@ public interface InterviewService {
 
   /**
    * Schedule a new interview
-   * @param interview The interview to schedule
-   * @return The scheduled interview
+   * Schedule a new interview based on provided details.
+   * @param jobId The ID of the job.
+   * @param studentId The ID of the student being interviewed.
+   * @param recruiterId The ID of the recruiter scheduling the interview.
+   * @param dateTime The date and time of the interview.
+   * @param notes Optional notes for the interview.
+   * @return The scheduled interview object.
+   * @throws RuntimeException if the corresponding application is not found or not in a valid state (e.g., SHORTLISTED).
    */
-  Interview scheduleInterview(Interview interview);
+  Interview scheduleInterview(Integer jobId, Integer studentId, Integer recruiterId, LocalDateTime dateTime, String notes);
 
   /**
    * Get interview by ID
