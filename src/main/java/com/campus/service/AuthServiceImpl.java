@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
   public User register(SignupRequest signupRequest) {
     // Check if email exists
     if (existsByEmail(signupRequest.getEmail())) {
-      throw new RuntimeException("Email already exists");
+      throw new RuntimeException("This email is already registered");
     }
 
     // Create user
@@ -154,13 +154,13 @@ public class AuthServiceImpl implements AuthService {
     recruiter.setUser(user);
 
     // Find company
-    Optional<Company> companyOptional = Optional.ofNullable(companyRepository.findById(1));
+    Optional<Company> companyOptional = companyRepository.findById(signupRequest.getCompanyId());
     if (!companyOptional.isPresent()) {
       throw new RuntimeException("Company not found");
     }
 
     recruiter.setCompany(companyOptional.get());
-    recruiter.setPosition("HR");
+    recruiter.setPosition(signupRequest.getPosition());
 
     recruiterRepository.save(recruiter);
   }

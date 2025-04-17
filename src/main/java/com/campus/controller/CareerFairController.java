@@ -1,6 +1,7 @@
 package com.campus.controller;
 
 import com.campus.model.CareerFair;
+import com.campus.model.Event;
 import com.campus.service.CareerFairService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,8 @@ public class CareerFairController {
   private CareerFairService careerFairService;
 
   @PostMapping
-  public String createCareerFair(@RequestBody CareerFair fair) {
-    careerFairService.createCareerFair(fair);
+  public String createCareerFair(@RequestBody Event event) {
+    careerFairService.createCareerFair(event);
     return "Career fair created successfully";
   }
 

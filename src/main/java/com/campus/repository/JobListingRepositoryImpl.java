@@ -62,8 +62,13 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
   @Override
   public JobListing save(JobListing jobListing) {
-    // prepare values (use today if postDate is null, default true for isActive)
-    int   companyId = jobListing.getCompany().getCompanyId();
+    String companySql = "SELECT companyID FROM recruiter WHERE recruiterID = ?";
+    Integer companyId = jdbcTemplate.queryForObject(
+        companySql,
+        Integer.class,
+        jobListing.getCompany().getCompanyId()
+    );
+
     String title    = jobListing.getTitle();
     String desc     = jobListing.getDescription();
     BigDecimal salary = jobListing.getSalary();
@@ -114,31 +119,37 @@ public class JobListingRepositoryImpl implements JobListingRepository {
 
   @Override
   public JobListing update(JobListing jobListing) {
+    String companySql = "SELECT companyID FROM recruiter WHERE recruiterID = ?";
+    Integer companyId = jdbcTemplate.queryForObject(
+        companySql,
+        Integer.class,
+        jobListing.getCompany().getCompanyId()
+    );
     SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
         .withProcedureName("sp_update_joblisting_full")
         .declareParameters(
-            new SqlParameter   ("p_job_id",       Types.INTEGER),
-            new SqlParameter   ("p_company_id",   Types.INTEGER),
-            new SqlParameter   ("p_title",        Types.VARCHAR),
-            new SqlParameter   ("p_description",  Types.LONGVARCHAR),
-            new SqlParameter   ("p_salary",       Types.DECIMAL),
-            new SqlParameter   ("p_job_type",     Types.VARCHAR),
-            new SqlParameter   ("p_deadline",     Types.DATE),
-            new SqlParameter   ("p_post_date",    Types.DATE),
-            new SqlParameter   ("p_is_active",    Types.TINYINT),
+            new SqlParameter("p_job_id", Types.INTEGER),
+            new SqlParameter("p_company_id", Types.INTEGER),
+            new SqlParameter("p_title", Types.VARCHAR),
+            new SqlParameter("p_description", Types.LONGVARCHAR),
+            new SqlParameter("p_salary", Types.DECIMAL),
+            new SqlParameter("p_job_type", Types.VARCHAR),
+            new SqlParameter("p_deadline", Types.DATE),
+            new SqlParameter("p_post_date", Types.DATE),
+            new SqlParameter("p_is_active", Types.TINYINT),
             new SqlOutParameter("p_rows_updated", Types.INTEGER)
         );
 
     MapSqlParameterSource in = new MapSqlParameterSource()
-        .addValue("p_job_id",       jobListing.getJobId())
-        .addValue("p_company_id",   jobListing.getCompany().getCompanyId())
-        .addValue("p_title",        jobListing.getTitle())
-        .addValue("p_description",  jobListing.getDescription())
-        .addValue("p_salary",       jobListing.getSalary())
-        .addValue("p_job_type",     jobListing.getJobType().toString())
-        .addValue("p_deadline",     Date.valueOf(jobListing.getDeadline()))
-        .addValue("p_post_date",    Date.valueOf(jobListing.getPostDate()))
-        .addValue("p_is_active",    jobListing.getActive());
+        .addValue("p_job_id", jobListing.getJobId())
+        .addValue("p_company_id",companyId)
+        .addValue("p_title", jobListing.getTitle())
+        .addValue("p_description", jobListing.getDescription())
+        .addValue("p_salary", jobListing.getSalary())
+        .addValue("p_job_type", jobListing.getJobType().toString())
+        .addValue("p_deadline", Date.valueOf(jobListing.getDeadline()))
+        .addValue("p_post_date", Date.valueOf(jobListing.getPostDate()))
+        .addValue("p_is_active", jobListing.getActive());
 
     Map<String, Object> out = call.execute(in);
     Integer rows = (Integer) out.get("p_rows_updated");
@@ -156,7 +167,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
       SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
           .withProcedureName("sp_delete_joblisting_by_id")
           .declareParameters(
-              new SqlParameter   ("p_job_id",       Types.INTEGER),
+              new SqlParameter("p_job_id", Types.INTEGER),
               new SqlOutParameter("p_rows_deleted", Types.INTEGER)
           );
 
@@ -316,7 +327,7 @@ public class JobListingRepositoryImpl implements JobListingRepository {
           .withProcedureName("sp_get_joblistings_by_deadline_not_passed")
           .returningResultSet("rs", jobListingRowMapper);
 
-      Map<String,Object> out = call.execute();
+      Map<String, Object> out = call.execute();
       @SuppressWarnings("unchecked")
       List<JobListing> list = (List<JobListing>) out.get("rs");
       return list;

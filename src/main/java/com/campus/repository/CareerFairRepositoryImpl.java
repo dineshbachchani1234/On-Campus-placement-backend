@@ -1,6 +1,7 @@
 package com.campus.repository;
 
 import com.campus.model.CareerFair;
+import com.campus.model.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,7 +26,7 @@ public class CareerFairRepositoryImpl implements CareerFairRepository {
   private JdbcTemplate jdbcTemplate;
 
   @Override
-  public void save(CareerFair fair) {
+  public void save(Event fair) {
     SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
         .withProcedureName("sp_insert_careerfair")
         .declareParameters(
@@ -45,9 +46,8 @@ public class CareerFairRepositoryImpl implements CareerFairRepository {
     Map<String,Object> out = call.execute(in);
     // if you later want the generated ID:
     Integer newId = (Integer) out.get("p_new_id");
-    fair.setFairId(newId);
+    fair.setEventId(newId);
   }
-
 
   @Override
   public CareerFair findById(int id) {

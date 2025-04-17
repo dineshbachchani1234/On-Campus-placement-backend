@@ -1,6 +1,7 @@
 package com.campus.service;
 
 import com.campus.model.CareerFair;
+import com.campus.model.Event;
 import com.campus.repository.CareerFairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class CareerFairServiceImpl implements CareerFairService {
   private CareerFairRepository careerFairRepository;
 
   @Override
-  public void createCareerFair(CareerFair fair) {
+  public void createCareerFair(Event fair) {
     careerFairRepository.save(fair);
   }
 
