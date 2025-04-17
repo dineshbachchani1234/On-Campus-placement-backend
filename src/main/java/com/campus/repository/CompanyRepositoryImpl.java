@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource; // Added import
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,7 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors; // Added import
 
 @Repository
 public class CompanyRepositoryImpl implements CompanyRepository {
@@ -177,7 +179,29 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
   @Override
   public Optional<Company> findByName(String companyName) {
-    return Optional.empty();
+    try {
+        SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate)
+            .withProcedureName("sp_get_company_by_name") // Assuming this SP exists
+            .declareParameters(new SqlParameter("p_name", Types.VARCHAR))
+            .returningResultSet("rs", new CompanyRowMapper());
+
+        MapSqlParameterSource in = new MapSqlParameterSource()
+            .addValue("p_name", companyName);
+
+        Map<String, Object> out = call.execute(in);
+        @SuppressWarnings("unchecked")
+        List<Company> list = (List<Company>) out.get("rs");
+
+        if (list.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(list.get(0));
+
+    } catch (Exception e) {
+        // Log error properly
+        System.err.println("Error calling sp_get_company_by_name for name '" + companyName + "': " + e.getMessage());
+        return Optional.empty(); // Return empty on error
+    }
   }
 
   @Override
@@ -198,7 +222,44 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
   @Override
   public boolean existsByEmail(String email) {
-    return false;
+     // TODO: Implement using a dedicated stored procedure or query if needed
+    return findByEmail(email).isPresent(); // Basic implementation using findByEmail
+  }
+
+   @Override
+   public boolean existsById(Integer id) {
+       // Implement using findById
+       return findById(id).isPresent();
+   }
+
+  @Override
+  public List<Company> findByIdIn(List<Integer> companyIds) {
+      if (companyIds == null || companyIds.isEmpty()) {
+          return List.of(); // Return empty list if input is empty
+      }
+
+      SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+              .withProcedureName("sp_get_companies_by_ids")
+              .declareParameters(new SqlParameter("p_company_ids", Types.VARCHAR)) // Input is comma-separated string
+              .returningResultSet("companies", new CompanyRowMapper()); // Use existing mapper
+
+      // Convert list of IDs to comma-separated string
+      String companyIdString = companyIds.stream()
+                                         .map(String::valueOf)
+                                         .collect(Collectors.joining(","));
+
+      SqlParameterSource in = new MapSqlParameterSource().addValue("p_company_ids", companyIdString);
+
+      try {
+          Map<String, Object> out = jdbcCall.execute(in);
+          @SuppressWarnings("unchecked")
+          List<Company> companies = (List<Company>) out.get("companies");
+          return companies != null ? companies : List.of();
+      } catch (Exception e) {
+          System.err.println("Error calling sp_get_companies_by_ids: " + e.getMessage());
+          // Log the error properly in a real application
+          return List.of(); // Return empty list on error
+      }
   }
 
   private static class CompanyRowMapper implements RowMapper<Company> {

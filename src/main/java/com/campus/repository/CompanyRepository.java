@@ -45,4 +45,18 @@ public interface CompanyRepository extends BaseRepository<Company, Integer> {
    * @return true if the email exists, false otherwise
    */
   boolean existsByEmail(String email);
+
+  /**
+   * Check if a company exists by ID
+   * @param id The company ID to check
+   * @return true if the company exists, false otherwise
+   */
+  boolean existsById(Integer id); // Add existsById
+
+  /**
+   * Find companies by a list of IDs
+   * @param companyIds List of company IDs
+   * @return List of companies found
+   */
+  List<Company> findByIdIn(List<Integer> companyIds);
 }

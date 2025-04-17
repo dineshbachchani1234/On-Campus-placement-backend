@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional; // Import Optional
 
 @Service
 public class SponsorServiceImpl implements SponsorService {
@@ -19,8 +20,8 @@ public class SponsorServiceImpl implements SponsorService {
   }
 
   @Override
-  public Sponsor getSponsorById(int id) {
-    return sponsorRepository.findById(id);
+  public Optional<Sponsor> getSponsorById(int id) { // Change return type
+    return sponsorRepository.findById(id); // Return Optional directly
   }
 
   @Override

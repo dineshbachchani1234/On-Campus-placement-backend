@@ -6,10 +6,17 @@ import com.campus.repository.JobListingRepository;
 import com.campus.service.JobService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
+import java.sql.Types;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,19 +124,17 @@ public class JobServiceImpl implements JobService {
 
   @Override
   public List<JobListing> getRelevantJobsForStudent(Integer studentId) {
-    // Call stored procedure
-    String sql = "CALL get_relevant_jobs_for_student(?)";
-    return jdbcTemplate.query(sql, new Object[]{studentId}, (rs, rowNum) -> {
-      JobListing job = new JobListing();
-      job.setJobId(rs.getInt("jobID"));
-      job.setTitle(rs.getString("title"));
-      job.setDescription(rs.getString("description"));
-      job.setSalary(rs.getBigDecimal("salary"));
-      job.setJobType(JobListing.JobType.valueOf(rs.getString("jobType")));
-      job.setDeadline(rs.getDate("deadline").toLocalDate());
-      job.setPostDate(rs.getDate("postDate").toLocalDate());
-      job.setActive(rs.getBoolean("isActive"));
-      return job;
-    });
+    SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+        .withProcedureName("get_relevant_jobs_for_student")
+        .declareParameters(new SqlParameter("student_id", Types.INTEGER))
+        .returningResultSet("jobListings", BeanPropertyRowMapper.newInstance(JobListing.class)); // Assuming column names match JobListing properties
+
+    SqlParameterSource in = new MapSqlParameterSource().addValue("student_id", studentId);
+    Map<String, Object> out = jdbcCall.execute(in);
+
+    // The result set is typically returned under the key specified in returningResultSet
+    @SuppressWarnings("unchecked")
+    List<JobListing> jobs = (List<JobListing>) out.get("jobListings");
+    return jobs;
   }
 }

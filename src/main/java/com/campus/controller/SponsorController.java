@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/sponsors")
@@ -22,7 +23,8 @@ public class SponsorController {
 
   @GetMapping("/{id}")
   public Sponsor getSponsorById(@PathVariable int id) {
-    return sponsorService.getSponsorById(id);
+    return sponsorService.getSponsorById(id)
+        .orElseThrow(() -> new NoSuchElementException("Sponsor not found with id: " + id));
   }
 
   @GetMapping
